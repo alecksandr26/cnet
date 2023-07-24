@@ -18,6 +18,7 @@ namespace cnet {
 		CNET_RELU,
 		CNET_NONE
 	};
+	
 	template<typename T>
 	mat<T> &sigmoid(mat<T> &m);
 

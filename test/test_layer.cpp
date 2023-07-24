@@ -5,9 +5,12 @@
 
 int main(void)
 {
-	cnet::layer<double> l(10, 10, cnet::CNET_SIGMOID);
-	cnet::layer<double> l2(10, 5, cnet::CNET_SIGMOID);
+	cnet::layer<double> l(10, 10, cnet::CNET_RELU);
+	l.rand_range(-5.0, 5.0);
+	cnet::layer<double> l2(10, 5, cnet::CNET_RELU);
+	l2.rand_range(-5.0, 5.0);
 	cnet::layer<double> l3(5, 1, cnet::CNET_SIGMOID);
+	l3.rand_range(-5.0, 5.0);
 	
 	cnet::mat<double> X(10, 1);
 	cnet::rand_mat(X, -10.0, 10.0);
@@ -16,21 +19,20 @@ int main(void)
 	std::cout << X << std::endl;
 	std::cout << l << std::endl;
 	
-	cnet::mat<double> A1 = l.feedforward(X);
-	std::cout << "A1 = \n";
-	std::cout << A1 << std::endl;
+	cnet::mat<double> A = l.feedforward(X);
+	std::cout << "A = \n";
+	std::cout << A << std::endl;
 
 	std::cout << l2 << std::endl;
 	
-	cnet::mat<double> A2 = l2.feedforward(A1);
-	std::cout << "A2 = \n";
-	std::cout << A2 << std::endl;
+	A = l2.feedforward(A);
+	std::cout << "A = \n";
+	std::cout << A << std::endl;
 
 	std::cout << l3 << std::endl;
 
-	cnet::mat<double> A3 = l3.feedforward(A2);
-	std::cout << "A3 = \n";
-	std::cout << A3 << std::endl;
-	
+	A = l3.feedforward(A);
+	std::cout << "A = \n";
+	std::cout << A << std::endl;
 	return 0;
 }

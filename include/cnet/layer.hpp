@@ -11,17 +11,22 @@
 #define LAYER_INCLUDED
 
 #include <cstddef>
-#include "afuncs.hpp"
+#include "afunc.hpp"
 #include "mat.hpp"
 
 namespace cnet {
 	template<class T>
 	class layer {
-	public:		
+	public:
+		layer(std::size_t in, std::size_t out);
 		layer(std::size_t in, std::size_t out, enum AFUNC_TYPE afunc);
-
-		mat<T> feedforward(mat<T> &X);
+		layer(void);
 		
+		void mod(std::size_t in, std::size_t out, enum AFUNC_TYPE afunc);
+		void mod(std::size_t in, std::size_t out);
+		void rand_range(T a, T b);
+		mat<T> feedforward(mat<T> &X);
+
 		friend std::ostream &operator<<(std::ostream& os, const layer<T> &l)
 		{
 			os << "W = \n" << l.W_;
@@ -30,9 +35,10 @@ namespace cnet {
 			return os;
 		}
 
+		mat<T> W_, B_;
+		
 	private:
 		std::size_t in_, out_;
-		mat<T> W_, B_;
 		enum AFUNC_TYPE afunc_;
 	};
 }

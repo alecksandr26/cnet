@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include "../include/cnet/mat.hpp"
-
+#include "../include/cnet/afunc.hpp"
 
 void example_mul(void)
 {
@@ -21,7 +21,7 @@ void example_mul(void)
 	std::cout << C << std::endl;
 	std::cout << D << std::endl;
 
-	std::cout << C.get_n_cols() << " " << D.get_n_rows() << std::endl;
+	std::cout << C.get_cols() << " " << D.get_rows() << std::endl;
 	cnet::mat<double> R = C * D;
 	std::cout << R << std::endl;
 }
@@ -40,9 +40,36 @@ int main(void)
 		{1.0}
 	};
 
-	cnet::mat<double> C = A * B;
+	cnet::mat<double> D = {
+		{5.0},
+		{5.0}
+	};
 	
+	cnet::mat<double> C = A * B + D;
+	cnet::mat<double> M;
+
+	M = C;
+	
+
+	std::cout << "A = " << std::endl;
+	std::cout << A << std::endl;
+
+	std::cout << "B = " << std::endl;
+	std::cout << B << std::endl;
+	
+	std::cout << "C = " << std::endl;
 	std::cout << C << std::endl;
+
+	std::cout << "D = " << std::endl;
+	std::cout << D << std::endl;
+
+	
+	std::cout << "sig(C)"  << std::endl;
+	std::cout << cnet::sigmoid(C) << std::endl;
+
+	std::cout << "M = " << std::endl;
+	std::cout << M << std::endl;
+	
 		
 	return 0;
 }
