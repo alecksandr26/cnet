@@ -47,7 +47,7 @@ void cnet::ann<T>::fit(mat<T> *input, mat<T> *output, std::size_t train_size, do
 {
 	while (nepochs--) {
 		double c, dc;
-		const double h = 0.00001;
+		const double h = 0.00001; // epsilon
 		
 		for (std::size_t l = 0; l < l_; l++) {
 			for (std::size_t i = 0; i < layers_[l].W_.get_rows(); i++)
