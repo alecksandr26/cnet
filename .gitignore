@@ -1,6 +1,6 @@
-
 build-debug/*
-build/*
+build-release/*
+Testing/*
 
 # Prerequisites
 *.d
