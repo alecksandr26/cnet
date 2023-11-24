@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include "../include/cnet/cost.hpp"
 #include "../include/cnet/ann.hpp"
