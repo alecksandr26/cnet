@@ -1,0 +1,9 @@
+
+project(${CMAKE_PROJECT_NAME})
+
+# Installing the header files
+install(DIRECTORY ${INCLUDE_DIR}/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/
+  FILES_MATCHING PATTERN "*.hpp"
+)
+

@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <random>
 
-#include "../include/cnet/mat.hpp"
+#include "cnet/mat.hpp"
 
 template<class T>
 cnet::mat<T>::mat(std::size_t row, std::size_t col)
@@ -104,10 +104,10 @@ std::size_t cnet::mat<T>::get_cols() const
 template<class T>
 cnet::mat<T> cnet::mat<T>::transpose(void)
 {
-	cnet::mat<T> R(get_cols(), get_rows());
+	cnet::mat<T> R(col_, row_);
 	
-	for (std::size_t i = 0; i < get_rows(); i++)
-		for (std::size_t j = 0; j < get_cols(); j++)
+	for (std::size_t i = 0; i < row_; i++)
+		for (std::size_t j = 0; j < col_; j++)
 			R(j, i) = mat_[i * col_ + j];
 	
 	return R;
@@ -124,12 +124,12 @@ T &cnet::mat<T>::operator()(std::size_t i, std::size_t j) const
 template<class T>
 cnet::mat<T> cnet::mat<T>::operator+(const cnet::mat<T> &B)
 {
-	if (get_cols() != B.get_cols() || get_rows() != B.get_rows())
-		throw std::invalid_argument("invalid argument: Matrices has different sizes");
+	if (col_ != B.get_cols() || row_ != B.get_rows())
+		throw std::invalid_argument("invalid argument: Matrices have different sizes");
 
-	cnet::mat<T> C(get_rows(), get_cols());
-	for (std::size_t i = 0; i < get_rows(); i++)
-		for (std::size_t j = 0; j < get_cols(); j++)
+	cnet::mat<T> C(row_, col_);
+	for (std::size_t i = 0; i < row_; i++)
+		for (std::size_t j = 0; j < col_; j++)
 			C(i, j) = mat_[i * col_ + j] + B(i, j);
 	
 	return C;
@@ -138,28 +138,30 @@ cnet::mat<T> cnet::mat<T>::operator+(const cnet::mat<T> &B)
 template<class T>
 cnet::mat<T> cnet::mat<T>::operator-(const cnet::mat<T> &B)
 {
-	if (get_cols() != B.get_cols() || get_rows() != B.get_rows())
+	if (col_ != B.get_cols() || row_ != B.get_rows())
 		throw std::invalid_argument("invalid argument: Matrices has different sizes");
 
-	cnet::mat<T> C(get_rows(), get_cols());
-	for (std::size_t i = 0; i < get_rows(); i++)
-		for (std::size_t j = 0; j < get_cols(); j++)
+	cnet::mat<T> C(row_, col_);
+	for (std::size_t i = 0; i < row_; i++)
+		for (std::size_t j = 0; j < col_; j++)
 			C(i, j) = mat_[i * col_ + j] - B(i, j);
 	
 	return C;
 }
 
+
+// This function needs to support complex variables
 template<class T>
 cnet::mat<T> cnet::mat<T>::operator*(const cnet::mat<T> &B)
 {
-	if (get_cols() != B.get_rows())
+	if (col_ != B.get_rows())
 		throw std::invalid_argument("invalid argument: n cols != n rows");
 	
-	cnet::mat<T> R(get_rows(), B.get_cols());
-	for (std::size_t i = 0; i < get_rows(); i++)
+	cnet::mat<T> R(row_, B.get_cols());
+	for (std::size_t i = 0; i < row_; i++)
 		for (std::size_t j = 0; j < B.get_cols(); j++) {
-			R(i, j) = 0;
-			for (size_t k = 0; k < get_cols(); k++)
+			R(i, j) = 0.0; // We have an error here
+			for (size_t k = 0; k < col_; k++)
 				R(i, j) += mat_[i * col_ + k] * B(k, j);
 		}
 
@@ -194,7 +196,6 @@ void cnet::mat<T>::operator=(const cnet::mat<T> &B)
 		for (std::size_t j = 0; j < B.get_cols(); j++)
 			mat_[i * col_ + j] = B(i, j);
 }
-
 
 
 void cnet::rand_mat(cnet::mat<double> &m, double a, double b)

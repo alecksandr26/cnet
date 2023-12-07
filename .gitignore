@@ -1,5 +1,4 @@
-build-debug/*
-build-release/*
+build*/*
 Testing/*
 
 # Prerequisites
