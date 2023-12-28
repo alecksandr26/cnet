@@ -38,6 +38,8 @@ int main() {
 	clock_t end_time = clock();
 	double cpu_time_used = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
 
+	
+	/* Matrix multiplication time: 0.471327 seconds  */
 	printf("Matrix multiplication time: %f seconds\n", cpu_time_used);
 
 	// Optionally print the result matrix

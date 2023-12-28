@@ -9,11 +9,14 @@ target_link_libraries(bench_my_lib
 )
 
 find_package(Python COMPONENTS Interpreter Development)
-if(PYTHON_FOUND)
+if(Python_Interpreter_FOUND)
   set(BENCH_PYTHON "bench_python")
-  add_custom_target(${BENCH_PYTHON} ALL
-    COMMAND 
-    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/bench_python.py
+  add_custom_target(${BENCH_PYTHON})
+
+  add_custom_command(
+    TARGET ${BENCH_PYTHON}
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/bench_python.py
+    COMMENT "Running bench_python.py with ${Python_EXECUTABLE}"
   )
 endif()
 

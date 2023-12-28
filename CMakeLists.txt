@@ -46,14 +46,31 @@ set(EXAMPLE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/examples)
 add_subdirectory(${SRC_DIR}/)
 add_subdirectory(${INCLUDE_DIR}/)
 
-if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE STREQUAL "Release")
-  add_subdirectory(${EXAMPLE_DIR}/)
-endif()
-
 # To build the tests
 if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE STREQUAL "Release")
   enable_testing()
 
   add_subdirectory(${TEST_DIR}/)
+  add_subdirectory(${EXAMPLE_DIR}/)
 endif()
+
+
+# To format the code 
+file(GLOB SOURCES
+  ${SRC_DIR}/*.cpp
+)
+
+file(GLOB HEADERS
+  ${INCLUDE_DIR}/*.hpp
+)
+
+set(CLANG_FORMAT "clang-format")
+set(FORMAT "format")
+add_custom_target(${FORMAT})
+
+add_custom_command(
+  TARGET ${FORMAT}
+  COMMAND ${CLANG_FORMAT} -i ${SOURCES} ${HEADERS}
+  COMMENT "Running clang-format on source files: ${SOURCES} ${HEADERS}"
+)
 

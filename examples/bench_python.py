@@ -20,4 +20,5 @@ matrix_size = 1000
 # Measure time for matrix multiplication
 elapsed_time = measure_matrix_multiplication(matrix_size)
 
+# Matrix multiplication time for size 1000 x 1000: 0.501300 seconds
 print(f"Matrix multiplication time for size {matrix_size} x {matrix_size}: {elapsed_time:.6f} seconds")
