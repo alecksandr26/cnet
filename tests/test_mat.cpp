@@ -113,38 +113,32 @@ TEST(MatTest, TestMatMulAddOperation) {
 	// A 2 rows and B 2 cols 
 	mat<double> D = A * B + C;
 
-
 	ASSERT_EQ(D.get_rows(), 2);
 	ASSERT_EQ(D.get_cols(), 2);
-	
 	
 	ASSERT_EQ(D(0, 0), 5.0);
 }
 
 TEST(MatTest, TestMatTimeMulOperation) {
-	static constexpr int size_mat = 1000;
+	static constexpr int size_mat = 100;
 	
-	mat<double> X(size_mat, 1);
 	mat<double> A(size_mat, size_mat);
-	mat<double> B(size_mat, 1);
+	mat<double> B(size_mat, size_mat);
 
 	// Assing random values
 	rand_mat(A, 0.0, 1.0);
-	rand_mat(X, 0.0, 1.0);
 	rand_mat(B, 0.0, 1.0);
-	
+
 	auto beg = std::chrono::high_resolution_clock::now();
 	
-	mat<double> X_T = X.transpose();
-	mat<double> B_T = B.transpose();
-	
-	// X_T 1 rows and A 100 cols
-	mat<double> R = X_T * A + B_T;
+	// X_T 1 rows and A 1000 cols
+	mat<double> R;
+	for (std::size_t i = 0; i < 10; i++)
+		R = A * B;
 	
 	auto end = std::chrono::high_resolution_clock::now();
-	
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
-
+	
 	// Convert microseconds to seconds
 	double seconds = duration.count() / 1e6;
 

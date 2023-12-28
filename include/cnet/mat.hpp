@@ -14,9 +14,14 @@
 #include <complex>
 #include <iomanip>
 #include <vector>
+#include <immintrin.h>
 
 namespace cnet {
-	template<class T> class mat {
+	typedef __m512d vec8double;
+	typedef __m256d vec4double;
+	
+	template<class T>
+	class mat {
 	public:
 		mat(std::size_t rows, std::size_t cols);
 		mat(std::size_t rows, std::size_t cols, T initial);
@@ -26,9 +31,18 @@ namespace cnet {
 		~mat(void);
 		
 		void resize(std::size_t rows, std::size_t cols);
-		std::size_t get_rows() const;
-		std::size_t get_cols() const;
+		void resize(std::size_t rows, std::size_t cols, T initial);
+		std::size_t get_rows(void) const;
+		std::size_t get_cols(void) const;
 		mat<T> transpose(void);
+		T *get_mat_alloc(void) const;
+		
+#if __AVX512F__
+		cnet::vec8double *get_vec_mat_alloc(void) const;
+#else
+		cnet::vec4double *get_vec_mat_alloc(void) const;
+#endif
+		
 		
 		T &operator()(std::size_t row, std::size_t col) const;
 		mat<T> operator+(const mat<T> &B);
@@ -37,28 +51,37 @@ namespace cnet {
 		void operator=(std::initializer_list<std::initializer_list<T>> m);
 		void operator=(const mat<T> &B);
 		
-		friend std::ostream &operator<<(std::ostream& os, const mat<T> &m)
-		{
-			for (std::size_t i = 0; i < m.get_rows(); i++) {
-				for (std::size_t j = 0; j < m.get_cols(); j++) {
-					if (j == 0)
-						os << '|';
-					os << std::fixed << std::setprecision(5) << m(i, j);
-					if (j == m.get_cols() - 1)
-						os << '|';
-					else
-						os << ' ';
-					
+		friend std::ostream &operator<<(std::ostream &os, const mat<T> &m) {
+			os << "[";
+			for (std::size_t i = 0; i < m.row_; i++) {
+				if (i > 0) {
+					os << " ";
 				}
-				os << '\n';
+				os << "[";
+				for (std::size_t j = 0; j < m.col_; j++) {
+					os << m.mat_[i * m.col_ + j];
+					if (j < m.col_ - 1) {
+						os << "\t";
+					}
+				}
+				os << "]";
+				if (i < m.row_ - 1) {
+					os << "\n";
+				}
 			}
-			
+			os << "]";
+
 			return os;
 		}
 
 	private:
 		std::size_t row_, col_;
 		T *mat_;
+#if __AVX512F__
+		cnet::vec8double *vec_mat_alloc;
+#else
+		cnet::vec4double *vec_mat_alloc;
+#endif
 	};
 
 	extern void rand_mat(mat<double> &m, double a, double b);

@@ -21,7 +21,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 if(UNIX)
   set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -pedantic -ggdb")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -ffast-math -march=native")
 else()
   # Flags for Windows with MSVC
   set(CMAKE_CXX_FLAGS_DEBUG "/W3 /Od /Zi /DDEBUG")
@@ -44,6 +44,15 @@ set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 add_subdirectory(${SRC_DIR}/)
 add_subdirectory(${INCLUDE_DIR}/)
+
+
+add_executable(example_matrix
+  example_matrix.cpp
+)
+
+target_link_libraries(example_matrix
+  PRIVATE ${CMAKE_PROJECT_NAME}
+)
 
 # To build the tests
 if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE STREQUAL "Release")
