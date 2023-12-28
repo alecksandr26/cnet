@@ -13,7 +13,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(cnet VERSION 1.0.0
-  DESCRIPTION "ComplexNet is an artificial neural network framework designed to handle complex-valued parameters."
+  DESCRIPTION "ComplexNet is an artificial neural network framework designed to handle complex-val parameters."
   LANGUAGES CXX
 )
 
@@ -41,18 +41,14 @@ include(GNUInstallDirs)
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+set(EXAMPLE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/examples)
 
 add_subdirectory(${SRC_DIR}/)
 add_subdirectory(${INCLUDE_DIR}/)
 
-
-add_executable(example_matrix
-  example_matrix.cpp
-)
-
-target_link_libraries(example_matrix
-  PRIVATE ${CMAKE_PROJECT_NAME}
-)
+if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+  add_subdirectory(${EXAMPLE_DIR}/)
+endif()
 
 # To build the tests
 if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE STREQUAL "Release")

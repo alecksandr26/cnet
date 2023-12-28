@@ -6,7 +6,6 @@ using namespace cnet;
 
 int main(void)
 {
-
 	mat<double> X = {	// 2 allocs
 		{1, 2, 3, 4, 5, 6, 7, 8, 9},
 		{10, 11, 12, 13, 14, 15, 16, 17, 18},
@@ -94,38 +93,72 @@ int main(void)
 	
 	// https:en.algorithmica.org/hpc/external-memory/oblivious/#algorithm
 
+	// Measured with this cpu
+	
+	// Architecture:                       x86_64
+	// CPU op-mode(s):                     32-bit, 64-bit
+	// Address sizes:                      43 bits physical, 48 bits virtual
+	// Byte Order:                         Little Endian
+	// CPU(s):                             12
+	// On-line CPU(s) list:                0-11
+	// Vendor ID:                          AuthenticAMD
+	// Model name:                         AMD Ryzen 5 2600 Six-Core Processor
+	// CPU family:                         23
+	// Model:                              8
+	// Thread(s) per core:                 2
+	// Core(s) per socket:                 6
+	// Socket(s):                          1
+	// Stepping:                           2
+	// Frequency boost:                    enabled
+	// CPU(s) scaling MHz:                 53%
+	// CPU max MHz:                        3400.0000
+	// CPU min MHz:                        1550.0000
+	// Virtualization:                     AMD-V
+	// L1d cache:                          192 KiB (6 instances)
+	// L1i cache:                          384 KiB (6 instances)
+	// L2 cache:                           3 MiB (6 instances)
+	// L3 cache:                           16 MiB (2 instances)
+	// NUMA node(s):                       1
+	// NUMA node0 CPU(s):                  0-11
+
+	
+
 	// N = 50
 	// Normal Elapsed Time: 0.016529 ~ 0.036987 seconds 
 	// Strassen Vectorized version Elapsed Time: 0.006684 ~ 0.007511 seconds
+	// The paralleized Strassen Vectorized version Elapsed Time: 0.003776 ~ 0.005055 seconds
 	
 	// N = 100
 	// Normal Elapsed Time: 0.110695 ~ 0.153430 seconds
 	// Strassen Elapsed Time: 0.088378 ~ 0.133848 seconds
 	// Strassen Vectorized version Elapsed Time: 0.045144 ~ 0.087983 seconds
+	// The paralleized Strassen Vectorized version Elapsed Time: 0.017151 ~ 0.020471 seconds
 
 	// N = 200
 	// Normal Elapsed Time: 0.872653 ~ 0.902815 seconds
 	// Strassen Elapsed Time: 0.663484 ~ 0.723685 seconds
 	// Strassen Vectorized version Elapsed Time: 0.328136 ~ 0.338400 seconds
+	// The paralleized Strassen Vectorized version Elapsed Time: 0.077055 ~ 0.080233 seconds
 	
 	// N = 300
 	// Normal Elapsed Time: 2.912563 ~ 3.085271 seconds
 	// Strassen Elapsed Time: 5.546863 ~ 5.931044 seconds
 	// Strassen Vectorized version Elapsed Time: 2.450393 ~ 2.518431 seconds
+	// The paralleized Strassen Vectorized version Elapsed Time: 0.383102 ~ 0.431236 seconds
 
 	// N = 500
 	// Normal Elapsed Time: 14.304790 ~ 15.288232 seconds
 	// Strassen Elapsed Time: 5.470263 ~ 5.621796 seconds
 	// Strassen Vectorized version Elapsed Time: 2.493669 ~ 2.507378 seconds
-	// new version 1.688250 ~ 1.699067
+	// The paralleized Strassen Vectorized version Elapsed Time: 0.402513 ~ 0.442851 seconds
 
 	// N = 1000
 	// Normal Elapsed Time: 118.052953 seconds
 	// Strassen Elapsed Time: 46.645130 ~ 48.601734 seconds
 	// Strassen Vectorized version Elapsed Time: 19.657362 ~ 19.764867 seconds
-	// new version 13.086236 ~ 13.221918
+	// The paralleized Strassen Vectorized version Elapsed Time: 2.929702 ~ 2.996234 seconds
 	
-	static constexpr int size_mat = 1000;
+	static constexpr int size_mat = 100;
 	
 	mat<double> A(size_mat, size_mat);
 	mat<double> B(size_mat, size_mat);
@@ -137,8 +170,8 @@ int main(void)
 	auto beg = std::chrono::high_resolution_clock::now();
 	
 	mat<double> R;
-	// for (std::size_t i = 0; i < 10; i++)
-	R = A * B;
+	for (std::size_t i = 0; i < 10; i++)
+		R = A * B;
 	
 	auto end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);

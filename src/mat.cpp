@@ -7,8 +7,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
-// #include <thread>
+
+// To optimize the matrix multiplication and the parallelization of it
 #include <immintrin.h>
+#include <omp.h>
 
 #include "cnet/mat.hpp"
 
@@ -23,6 +25,9 @@
 #endif
 
 constexpr std::size_t N_B = (MAT_VEC_SIZE + VEC_SIZE - 1) / VEC_SIZE;
+
+// For the multiplication process
+omp_lock_t strassen_mat_mul_lock;
 
 int precomputed_log_2_n[] = {
         1, 2, 4, 8, 16, 32, 64, 128, 256, 512,
@@ -122,26 +127,25 @@ void pad_matrix_to_power_2(const cnet::mat<T> &A, T **p_a, std::size_t n)
 
 		std::size_t rows_mod = rows % 2;
 		std::size_t rows_to_ite = rows - rows_mod;
-
-		std::size_t i, j;
 		
-		for (i = 0; i < rows_to_ite; i += 2) {
-			for (j = 0; j < cols_to_ite; j += VEC_SIZE) {
+#pragma omp parallel for
+		for (std::size_t i = 0; i < rows_to_ite; i += 2) {
+			for (std::size_t j = 0; j < cols_to_ite; j += VEC_SIZE) {
 				cnet::vec4double vectorA = _mm256_loadu_pd(&A(i, j));
-				cnet::vec4double vectorB = _mm256_loadu_pd(&A(i + 1, j));
-				
 				_mm256_storeu_pd(&(*p_a)[i * n + j], vectorA);
+				
+				cnet::vec4double vectorB = _mm256_loadu_pd(&A(i + 1, j));
 				_mm256_storeu_pd(&(*p_a)[(i + 1) * n + j], vectorB);
 			}
 			
-			for (; j < cols; j++) {
+			for (std::size_t j = cols_to_ite; j < cols; j++) {
 				(*p_a)[i * n + j] = A(i, j);
 				(*p_a)[(i + 1) * n + j] = A(i + 1, j);
 			}
 		}
 		
-		for (; i < rows; i++)
-			for (j = 0; j < cols; j++)
+		for (std::size_t i = rows_to_ite; i < rows; i++)
+			for (std::size_t j = 0; j < cols; j++)
 				(*p_a)[i * n + j] = A(i, j);
 		
 		break;
@@ -186,26 +190,9 @@ void strassen_mat_mul(T *A, T *B, T *C, std::size_t n, std::size_t N, cnet::vec4
 			break;
 
 		default:
+#pragma omp parallel for collapse(2)
 			for (std::size_t i = 0; i < n; i += 2) {
 				for (std::size_t j = 0; j < n; j += 2 * VEC_SIZE) {
-					// Load 8 double values for each row
-					// cnet::vec4double vecA1 = _mm256_loadu_pd(&A[i * N + j]);
-					// cnet::vec4double vecA2 = _mm256_loadu_pd(&A[i * N + j + VEC_SIZE]);
-					// _mm256_storeu_pd(&a[i * N_B + j / VEC_SIZE][0], vecA1);
-					// _mm256_storeu_pd(&a[i * N_B + (j + VEC_SIZE) / VEC_SIZE][0], vecA2);
-								
-					// cnet::vec4double vecB1 = _mm256_set_pd(B[(j + 3) * N + i],
-					// 				       B[(j + 2) * N + i],
-					// 				       B[(j + 1) * N + i],
-					// 				       B[(j + 0) * N + i]);
-					
-					// cnet::vec4double vecB2 = _mm256_set_pd(B[(j + 3 + VEC_SIZE) * N + i],
-					// 				       B[(j + 2 + VEC_SIZE) * N + i],
-					// 				       B[(j + 1 + VEC_SIZE) * N + i],
-					// 				       B[(j + VEC_SIZE) * N + i]);
-					// _mm256_storeu_pd(&b[i * N_B + j / VEC_SIZE][0], vecB1);
-					// _mm256_storeu_pd(&b[i * N_B + (j + VEC_SIZE) / VEC_SIZE][0], vecB2);
-					
 					cnet::vec4double vecA1 = _mm256_loadu_pd(&A[i * N + j]);
 					cnet::vec4double vecA2 = _mm256_loadu_pd(&A[i * N + j + VEC_SIZE]);
 					cnet::vec4double vecA3 = _mm256_loadu_pd(&A[(i + 1) * N + j]);
@@ -259,6 +246,7 @@ void strassen_mat_mul(T *A, T *B, T *C, std::size_t n, std::size_t N, cnet::vec4
 			}
 			break;
 		default:
+#pragma omp parallel for collapse(2)
 			for (std::size_t i = 0; i < n; i += 2) {
 				for (std::size_t j = 0; j < n; j += 2) {
 					// initialize the accumulators
@@ -287,6 +275,7 @@ void strassen_mat_mul(T *A, T *B, T *C, std::size_t n, std::size_t N, cnet::vec4
 			}
 			break;
 		}
+		
 		return;
 	}
 
@@ -296,15 +285,15 @@ void strassen_mat_mul(T *A, T *B, T *C, std::size_t n, std::size_t N, cnet::vec4
 	// C11 = A11 B11 + A12 B21
 	strassen_mat_mul(A,     B,         C, k, N, a, b);
 	strassen_mat_mul(A + k, B + k * N, C, k, N, a, b);
-
+		
 	// C12 = A11 B12 + A12 B22
 	strassen_mat_mul(A,     B + k,         C + k, k, N, a, b);
 	strassen_mat_mul(A + k, B + k * N + k, C + k, k, N, a, b);
-
+		
 	// C21 = A21 B11 + A22 B21
 	strassen_mat_mul(A + k * N,     B,         C + k * N, k, N, a, b);
 	strassen_mat_mul(A + k * N + k, B + k * N, C + k * N, k, N, a, b);
-
+		
 	// C22 = A21 B12 + A22 B22
 	strassen_mat_mul(A + k * N,     B + k,         C + k * N + k, k, N, a, b);
 	strassen_mat_mul(A + k * N + k, B + k * N + k, C + k * N + k, k, N, a, b);
@@ -582,14 +571,38 @@ cnet::mat<T> cnet::mat<T>::operator*(const cnet::mat<T> &B)
 	std::free(p_b);
 	
 	// Alloc the reult matrix
-	std::size_t col = B.get_cols();
-	cnet::mat<T> C(row_, col);
+	std::size_t cols = B.get_cols();
+	std::size_t rows = row_;
+	cnet::mat<T> C(rows, cols);
+	
+	std::size_t cols_mod = cols % VEC_SIZE;
+	std::size_t cols_to_ite = cols - cols_mod;
+		
+	std::size_t rows_mod = rows % 2;
+	std::size_t rows_to_ite = rows - rows_mod;
 
-	// All the for loops can be vectorized
-	for (std::size_t i = 0; i < row_; i++)
-		for (std::size_t j = 0; j < col; j++)
-			C(i, j) = p_c[i * n + j];
+	T *c_mat_alloc = C.get_mat_alloc();
 
+#pragma omp parallel for
+	for (std::size_t i = 0; i < rows_to_ite; i += 2) {
+		for (std::size_t j = 0; j < cols_to_ite; j += VEC_SIZE) {
+			cnet::vec4double vectorA = _mm256_loadu_pd(&p_c[i * n + j]);
+			_mm256_storeu_pd(&c_mat_alloc[i * rows + j], vectorA);
+			
+			cnet::vec4double vectorB = _mm256_loadu_pd(&p_c[(i + 1) * n + j]);
+			_mm256_storeu_pd(&c_mat_alloc[(i + 1) * rows + j], vectorB);
+		}
+
+		for (std::size_t j = cols_to_ite; j < cols; j++) {
+			c_mat_alloc[i * rows + j] = p_c[i * n + j];
+			c_mat_alloc[(i + 1) * rows + j] = p_c[i * n + j];
+		}
+	}
+
+	for (std::size_t i = rows_to_ite; i < rows; i++)
+		for (std::size_t j = 0; j < cols; j++)
+			c_mat_alloc[i * rows + j] = p_c[i * n + j];
+	
 	std::free(p_c);
 	
 	return C;
