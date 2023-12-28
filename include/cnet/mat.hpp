@@ -19,6 +19,7 @@
 namespace cnet {
 	typedef __m512d vec8double;
 	typedef __m256d vec4double;
+	typedef __m128d vec2double;
 	
 	template<class T>
 	class mat {

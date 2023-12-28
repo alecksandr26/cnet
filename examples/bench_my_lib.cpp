@@ -6,30 +6,31 @@ using namespace cnet;
 
 int main(void)
 {
-	mat<double> X = {	// 2 allocs
-		{1, 2, 3, 4, 5, 6, 7, 8, 9},
-		{10, 11, 12, 13, 14, 15, 16, 17, 18},
-		{19, 20, 21, 22, 23, 24, 25, 26, 27},
-		{28, 29, 30, 31, 32, 33, 34, 35, 36},
-		{37, 38, 39, 40, 41, 42, 43, 44, 45},
-		{46, 47, 48, 49, 50, 51, 52, 53, 54},
-		{55, 56, 57, 58, 59, 60, 61, 62, 63},
-		{64, 65, 66, 67, 68, 69, 70, 71, 72},
-		{73, 74, 75, 76, 77, 78, 79, 80, 81}
-	};
+	// mat<double> X = {	// 2 allocs
+	// 	{1, 2, 3, 4, 5, 6, 7, 8, 9},
+	// 	{10, 11, 12, 13, 14, 15, 16, 17, 18},
+	// 	{19, 20, 21, 22, 23, 24, 25, 26, 27},
+	// 	{28, 29, 30, 31, 32, 33, 34, 35, 36},
+	// 	{37, 38, 39, 40, 41, 42, 43, 44, 45},
+	// 	{46, 47, 48, 49, 50, 51, 52, 53, 54},
+	// 	{55, 56, 57, 58, 59, 60, 61, 62, 63},
+	// 	{64, 65, 66, 67, 68, 69, 70, 71, 72},
+	// 	{73, 74, 75, 76, 77, 78, 79, 80, 81}
+	// };
 
-	mat<double> Y = {	//  2 allocs
-		{9, 8, 7, 6, 5, 4, 3, 2, 1},
-		{18, 17, 16, 15, 14, 13, 12, 11, 10},
-		{27, 26, 25, 24, 23, 22, 21, 20, 19},
-		{36, 35, 34, 33, 32, 31, 30, 29, 28},
-		{45, 44, 43, 42, 41, 40, 39, 38, 37},
-		{54, 53, 52, 51, 50, 49, 48, 47, 46},
-		{63, 62, 61, 60, 59, 58, 57, 56, 55},
-		{72, 71, 70, 69, 68, 67, 66, 65, 64},
-		{81, 80, 79, 78, 77, 76, 75, 74, 73}
-	};
+	// mat<double> Y = {	//  2 allocs
+	// 	{9, 8, 7, 6, 5, 4, 3, 2, 1},
+	// 	{18, 17, 16, 15, 14, 13, 12, 11, 10},
+	// 	{27, 26, 25, 24, 23, 22, 21, 20, 19},
+	// 	{36, 35, 34, 33, 32, 31, 30, 29, 28},
+	// 	{45, 44, 43, 42, 41, 40, 39, 38, 37},
+	// 	{54, 53, 52, 51, 50, 49, 48, 47, 46},
+	// 	{63, 62, 61, 60, 59, 58, 57, 56, 55},
+	// 	{72, 71, 70, 69, 68, 67, 66, 65, 64},
+	// 	{81, 80, 79, 78, 77, 76, 75, 74, 73}
+	// };
 
+	// Results in mat mul
 	// (2565 | 2520 | 2475 | 2430 | 2385 | 2340 | 2295 | 2250 | 2205
 	// 6210 | 6084 | 5958 | 5832 | 5706 | 5580 | 5454 | 5328 | 5202
 	// 9855 | 9648 | 9441 | 9234 | 9027 | 8820 | 8613 | 8406 | 8199
@@ -73,8 +74,18 @@ int main(void)
 
 	// [[7.000000	10.000000]
 	//  [15.000000	22.000000]]
-	
 
+
+	mat<double> X = {
+		{1}
+	};
+
+	mat<double> Y = {
+		{2}
+	};
+
+	// [[2]]
+	
 	// 1 alloc
 	mat<double> C;
 	
@@ -158,7 +169,7 @@ int main(void)
 	// Strassen Vectorized version Elapsed Time: 19.657362 ~ 19.764867 seconds
 	// The paralleized Strassen Vectorized version Elapsed Time: 2.929702 ~ 2.996234 seconds
 	
-	static constexpr int size_mat = 100;
+	static constexpr int size_mat = 1000;
 	
 	mat<double> A(size_mat, size_mat);
 	mat<double> B(size_mat, size_mat);
@@ -166,12 +177,12 @@ int main(void)
 	// Assing random values
 	rand_mat(A, 0.0, 1.0);
 	rand_mat(B, 0.0, 1.0);
-
+	
 	auto beg = std::chrono::high_resolution_clock::now();
 	
 	mat<double> R;
-	for (std::size_t i = 0; i < 10; i++)
-		R = A * B;
+	// for (std::size_t i = 0; i < 10; i++)
+	R = A * B;
 	
 	auto end = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
@@ -179,7 +190,30 @@ int main(void)
 	// Convert microseconds to seconds
 	double seconds = duration.count() / 1e6;
 	
-	std::cout << "Elapsed Time: " << std::fixed << std::setprecision(6)
+	std::cout << "Mat mul Elapsed Time: " << std::fixed << std::setprecision(6)
+		  << seconds << " seconds" << std::endl;
+
+
+	// Perfom the addition
+
+	// N = 1000
+	// Normal version Mat add Elapsed Time: 0.117499 seconds
+	// The vectorized version Mat add Elapsed Time: 0.021676 seconds
+	// The new version almost the finall version Mat add Elapsed Time: 0.006490 seconds
+	
+	beg = std::chrono::high_resolution_clock::now();
+	
+	mat<double> R1;
+	// for (std::size_t i = 0; i < 10; i++)
+	R1 = A - B;
+	
+	end = std::chrono::high_resolution_clock::now();
+	duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
+	
+	// Convert microseconds to seconds
+	seconds = duration.count() / 1e6;
+	
+	std::cout << "Mat add Elapsed Time: " << std::fixed << std::setprecision(6)
 		  << seconds << " seconds" << std::endl;
 	
 	return 0;

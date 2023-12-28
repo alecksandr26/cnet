@@ -28,7 +28,7 @@ constexpr std::size_t N_B = (MAT_VEC_SIZE + VEC_SIZE - 1) / VEC_SIZE;
 // For the multiplication process
 omp_lock_t strassen_mat_mul_lock;
 
-int precomputed_log_2_n[] = {
+int precomputed_pow_2_n[] = {
 	1,	  2,	    4,	      8,	 16,	    32,	      64,      128,
 	256,	  512,	    1024,     2048,	 4096,	    8192,     16384,   32768,
 	65536,	  131072,   262144,   524288,	 1048576,   2097152,  4194304, 8388608,
@@ -152,7 +152,8 @@ void pad_matrix_to_power_2(const cnet::mat<T> &A, T **p_a, std::size_t n)
 				(*p_a)[(i + 1) * n + j] = A(i + 1, j);
 			}
 		}
-
+		
+#pragma omp parallel for		
 		for (std::size_t i = rows_to_ite; i < rows; i++)
 			for (std::size_t j = 0; j < cols; j++)
 				(*p_a)[i * n + j] = A(i, j);
@@ -567,10 +568,220 @@ cnet::mat<T> cnet::mat<T>::operator+(const cnet::mat<T> &B)
 		throw std::invalid_argument(
 			"invalid argument: Matrices have different sizes");
 
+	// Alloc the matrix
 	cnet::mat<T> C(row_, col_);
-	for (std::size_t i = 0; i < row_; i++)
-		for (std::size_t j = 0; j < col_; j++)
-			C(i, j) = mat_[i * col_ + j] + B(i, j);
+
+	T *c_mat_alloc = C.get_mat_alloc();
+	T *b_mat_alloc = B.get_mat_alloc();
+
+	// By default it will increment in 4 by 4
+	std::size_t col_inc = 4;
+	switch (col_) {
+	case 1:
+		col_inc = 1;
+		break;
+	case 2: case 3:
+		col_inc = 2;
+		break;
+	}
+
+	std::size_t row_inc = 4;
+	switch (row_) {
+	case 1:
+		row_inc = 1;
+		break;
+	case 2: case 3:
+		row_inc = 2;
+		break;
+	}
+	
+	std::size_t col_mod = col_ % col_inc;
+	std::size_t col_ite = col_ - col_mod;
+	std::size_t row_mod = row_ % row_inc;
+	std::size_t row_ite = row_ - row_mod;
+
+	switch (row_inc) {
+	case 1:
+		switch (col_inc) {
+		case 1:
+#pragma omp parallel for collapse(2)
+			for (std::size_t i = 0; i < row_; i++)
+				for (std::size_t j = 0; j < col_; j++)
+					c_mat_alloc[i * col_ + j] = mat_[i * col_ + j]
+						+ b_mat_alloc[i * col_ + j];
+			break;
+		case 2: {
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_; i++) {
+				for (std::size_t j = 0; j < col_ite; j += 2) {
+					vec2double a = _mm_set_pd(mat_[i * col_ + j + 1], mat_[i * col_ + j]);
+					vec2double b = _mm_set_pd(b_mat_alloc[i * col_ + j + 1],
+								  b_mat_alloc[i * col_ + j]);
+					vec2double result = _mm_add_pd(a, b);
+					_mm_storeu_pd(&c_mat_alloc[i * col_ + j], result);
+				}
+
+				for (std::size_t j = col_ite; j < col_; j++)
+					c_mat_alloc[i * col_ + j] = mat_[i * col_ + j]
+						+ b_mat_alloc[i * col_ + j];
+			}
+		}
+			break;
+		default:
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_; i++) {
+				for (std::size_t j = 0; j < col_ite; j += 4) {
+					vec4double a = _mm256_set_pd(mat_[i * col_ + j + 3],
+								     mat_[i * col_ + j + 2],
+								     mat_[i * col_ + j + 1],
+								     mat_[i * col_ + j]);
+					vec4double b = _mm256_set_pd(b_mat_alloc[i * col_ + j + 3],
+								     b_mat_alloc[i * col_ + j + 2],
+								     b_mat_alloc[i * col_ + j + 1],
+								     b_mat_alloc[i * col_ + j]);
+					vec4double result = _mm256_add_pd(a, b);
+					_mm256_storeu_pd(&c_mat_alloc[i * col_ + j], result);
+				}
+
+				for (std::size_t j = col_ite; j < col_; j++)
+					c_mat_alloc[i * col_ + j] = mat_[i * col_ + j]
+						+ b_mat_alloc[i * col_ + j];
+			}
+			
+			break;
+		}
+		break;
+	case 2:
+		switch (col_inc) {
+		case 1:
+#pragma omp parallel for collapse(2)
+			for (std::size_t i = 0; i < row_ite; i += 2)
+				for (std::size_t j = 0; j < col_; j++)
+					for (std::size_t k = 0; k < 2; k++)
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							+ b_mat_alloc[(i + k) * col_ + j];
+			break;
+		case 2:
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_ite; i += 2) {
+				for (std::size_t j = 0; j < col_ite; j += 2) {
+					for (std::size_t k = 0; k < 2; k++) {
+						vec2double a = _mm_set_pd(mat_[(i + k) * col_ + j + 1],
+									  mat_[(i + k) * col_ + j]);
+						vec2double b = _mm_set_pd(b_mat_alloc[(i + k) * col_ + j + 1],
+									  b_mat_alloc[(i + k) * col_ + j]);
+						vec2double result = _mm_add_pd(a, b);
+						_mm_storeu_pd(&c_mat_alloc[(i + k) * col_ + j], result);
+					}
+				}
+
+				for (std::size_t j = col_ite; j < col_; j++)
+					for (std::size_t k = 0; k < 2; k++)
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							+ b_mat_alloc[(i + k) * col_ + j];
+			}
+			break;
+		default:
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_ite; i += 2) {
+				for (std::size_t j = 0; j < col_ite; j += 4) {
+					for (std::size_t k = 0; k < 2; k++) {
+						vec4double a = _mm256_set_pd(mat_[(i + k) * col_ + j + 3],
+								  mat_[(i + k) * col_ + j + 2],
+								  mat_[(i + k) * col_ + j + 1],
+								  mat_[(i + k) * col_ + j]);
+						vec4double b = _mm256_set_pd(b_mat_alloc[(i + k) * col_
+											 + j + 3],
+								  b_mat_alloc[(i + k) * col_ + j + 2],
+								  b_mat_alloc[(i + k) * col_ + j + 1],
+								  b_mat_alloc[(i + k) * col_ + j]);
+						vec4double result = _mm256_add_pd(a, b);
+						_mm256_storeu_pd(&c_mat_alloc[(i + k) * col_ + j], result);
+					}
+				}
+
+				for (std::size_t j = col_ite; j < col_; j++) {
+					for (std::size_t k = 0; k < 2; k++) {
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							+ b_mat_alloc[(i + k) * col_ + j];
+					}
+				}
+			}
+			break;
+		}
+
+#pragma omp parallel for collapse(2)
+		for (std::size_t i = row_ite; i < row_; i++)
+			for (std::size_t j = 0; j < col_; j++)
+				c_mat_alloc[i * col_ + j] = mat_[i * col_ + j]
+					+ b_mat_alloc[i * col_ + j];
+		break;
+	default:
+		switch (row_inc) {
+		case 1:
+#pragma omp parallel for collapse(2)
+			for (std::size_t i = 0; i < row_ite; i += 4)
+				for (std::size_t j = 0; j < col_; j++)
+					for (std::size_t k = 0; k < 4; k++)
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							+ b_mat_alloc[(i + k) * col_ + j];
+			break;
+		case 2:
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_ite; i += 4) {
+				for (std::size_t j = 0; j < col_; j += 2)
+					for (std::size_t k = 0; k < 4; k++) {
+						vec2double a = _mm_set_pd(mat_[(i + k) * col_ + j + 1],
+									  mat_[(i + k) * col_ + j]);
+						vec2double b = _mm_set_pd(b_mat_alloc[(i + k) * col_ + j + 1],
+									  b_mat_alloc[(i + k) * col_ + j]);
+						vec2double result = _mm_add_pd(a, b);
+						_mm_storeu_pd(&c_mat_alloc[(i + k) * col_ + j], result);
+					}
+				
+				for (std::size_t j = col_ite; j < col_; j++)
+					for (std::size_t k = 0; k < 4; j++)
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							+ b_mat_alloc[(i + k) * col_ + j];
+			}
+			
+			break;
+		default:
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_ite; i += 4) {
+				for (std::size_t j = 0; j < col_; j += 4)
+					for (std::size_t k = 0; k < 4; k++) {
+						vec4double a = _mm256_set_pd(mat_[(i + k) * col_ + j + 3],
+									     mat_[(i + k) * col_ + j + 2],
+									     mat_[(i + k) * col_ + j + 1],
+									     mat_[(i + k) * col_ + j]);
+						vec4double b = _mm256_set_pd(b_mat_alloc[(i + k) * col_
+											 + j + 3],
+									     b_mat_alloc[(i + k) * col_
+											 + j + 2],
+									     b_mat_alloc[(i + k) * col_
+											 + j + 1],
+									     b_mat_alloc[(i + k) * col_ + j]);
+						vec4double result = _mm256_add_pd(a, b);
+						_mm256_storeu_pd(&c_mat_alloc[(i + k) * col_ + j], result);
+					}
+				
+				for (std::size_t j = col_ite; j < col_; j++)
+					for (std::size_t k = 0; k < 4; k++)
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							+ b_mat_alloc[(i + k) * col_ + j];
+			}
+			
+			break;
+		}
+#pragma omp parallel for collapse(2)
+		for (std::size_t i = row_ite; i < row_; i++)
+			for (std::size_t j = 0; j < col_; j++)
+				c_mat_alloc[i * col_ + j] = mat_[i * col_ + j]
+					+ b_mat_alloc[i * col_ + j];
+		
+		break;
+	}
 
 	return C;
 }
@@ -581,11 +792,222 @@ cnet::mat<T> cnet::mat<T>::operator-(const cnet::mat<T> &B)
 	if (col_ != B.get_cols() || row_ != B.get_rows())
 		throw std::invalid_argument(
 			"invalid argument: Matrices has different sizes");
-
+	
+	// Alloc the matrix
 	cnet::mat<T> C(row_, col_);
-	for (std::size_t i = 0; i < row_; i++)
-		for (std::size_t j = 0; j < col_; j++)
-			C(i, j) = mat_[i * col_ + j] - B(i, j);
+	
+	T *c_mat_alloc = C.get_mat_alloc();
+	T *b_mat_alloc = B.get_mat_alloc();
+
+	// By default it will increment in 4 by 4
+	std::size_t col_inc = 4;
+	switch (col_) {
+	case 1:
+		col_inc = 1;
+		break;
+	case 2: case 3:
+		col_inc = 2;
+		break;
+	}
+
+	std::size_t row_inc = 4;
+	switch (row_) {
+	case 1:
+		row_inc = 1;
+		break;
+	case 2: case 3:
+		row_inc = 2;
+		break;
+	}
+	
+	std::size_t col_mod = col_ % col_inc;
+	std::size_t col_ite = col_ - col_mod;
+	std::size_t row_mod = row_ % row_inc;
+	std::size_t row_ite = row_ - row_mod;
+
+	switch (row_inc) {
+	case 1:
+		switch (col_inc) {
+		case 1:
+#pragma omp parallel for collapse(2)
+			for (std::size_t i = 0; i < row_; i++)
+				for (std::size_t j = 0; j < col_; j++)
+					c_mat_alloc[i * col_ + j] = mat_[i * col_ + j]
+						- b_mat_alloc[i * col_ + j];
+			break;
+		case 2:
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_; i++) {
+				for (std::size_t j = 0; j < col_ite; j += 2) {
+					vec2double a = _mm_set_pd(mat_[i * col_ + j + 1], mat_[i * col_ + j]);
+					vec2double b = _mm_set_pd(b_mat_alloc[i * col_ + j + 1],
+								  b_mat_alloc[i * col_ + j]);
+					vec2double result = _mm_sub_pd(a, b);  // Change here
+					_mm_storeu_pd(&c_mat_alloc[i * col_ + j], result);
+				}
+
+				for (std::size_t j = col_ite; j < col_; j++)
+					c_mat_alloc[i * col_ + j] = mat_[i * col_ + j]
+						- b_mat_alloc[i * col_ + j];
+			}
+			break;
+		default:
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_; i++) {
+				for (std::size_t j = 0; j < col_ite; j += 4) {
+					vec4double a = _mm256_set_pd(mat_[i * col_ + j + 3],
+								     mat_[i * col_ + j + 2],
+								     mat_[i * col_ + j + 1],
+								     mat_[i * col_ + j]);
+					vec4double b = _mm256_set_pd(b_mat_alloc[i * col_ + j + 3],
+								     b_mat_alloc[i * col_ + j + 2],
+								     b_mat_alloc[i * col_ + j + 1],
+								     b_mat_alloc[i * col_ + j]);
+					vec4double result = _mm256_sub_pd(a, b);  // Change here
+					_mm256_storeu_pd(&c_mat_alloc[i * col_ + j], result);
+				}
+
+				for (std::size_t j = col_ite; j < col_; j++)
+					c_mat_alloc[i * col_ + j] = mat_[i * col_ + j]
+						- b_mat_alloc[i * col_ + j];
+			}
+			break;
+		}
+		break;
+	case 2:
+		switch (col_inc) {
+		case 1:
+#pragma omp parallel for collapse(2)
+			for (std::size_t i = 0; i < row_ite; i += 2)
+				for (std::size_t j = 0; j < col_; j++)
+					for (std::size_t k = 0; k < 2; k++)
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							- b_mat_alloc[(i + k) * col_ + j];
+			break;
+		case 2:
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_ite; i += 2) {
+				for (std::size_t j = 0; j < col_ite; j += 2) {
+					for (std::size_t k = 0; k < 2; k++) {
+						vec2double a = _mm_set_pd(mat_[(i + k) * col_ + j + 1],
+									  mat_[(i + k) * col_ + j]);
+						vec2double b = _mm_set_pd(b_mat_alloc[(i + k) * col_ + j + 1],
+									  b_mat_alloc[(i + k) * col_ + j]);
+						vec2double result = _mm_sub_pd(a, b);
+						_mm_storeu_pd(&c_mat_alloc[(i + k) * col_ + j], result);
+					}
+				}
+
+				for (std::size_t j = col_ite; j < col_; j++)
+					for (std::size_t k = 0; k < 2; k++)
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							- b_mat_alloc[(i + k) * col_ + j];
+			}
+			break;
+		default:
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_ite; i += 2) {
+				for (std::size_t j = 0; j < col_ite; j += 4) {
+					for (std::size_t k = 0; k < 2; k++) {
+						vec4double a = _mm256_set_pd(mat_[(i + k) * col_ + j + 3],
+									     mat_[(i + k) * col_ + j + 2],
+									     mat_[(i + k) * col_ + j + 1],
+									     mat_[(i + k) * col_ + j]);
+						vec4double b = _mm256_set_pd(b_mat_alloc[(i + k) * col_
+											 + j + 3],
+									     b_mat_alloc[(i + k) * col_
+											 + j + 2],
+									     b_mat_alloc[(i + k) * col_
+											 + j + 1],
+									     b_mat_alloc[(i + k) * col_ + j]);
+						vec4double result = _mm256_sub_pd(a, b);
+						_mm256_storeu_pd(&c_mat_alloc[(i + k) * col_ + j], result);
+					}
+				}
+
+				for (std::size_t j = col_ite; j < col_; j++) {
+					for (std::size_t k = 0; k < 2; k++) {
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							- b_mat_alloc[(i + k) * col_ + j];
+					}
+				}
+			}
+			break;
+		}
+
+#pragma omp parallel for collapse(2)
+		for (std::size_t i = row_ite; i < row_; i++)
+			for (std::size_t j = 0; j < col_; j++)
+				c_mat_alloc[i * col_ + j] = mat_[i * col_ + j]
+					- b_mat_alloc[i * col_ + j];
+		break;
+	default:
+		switch (row_inc) {
+		case 1:
+#pragma omp parallel for collapse(2)
+			for (std::size_t i = 0; i < row_ite; i += 4)
+				for (std::size_t j = 0; j < col_; j++)
+					for (std::size_t k = 0; k < 4; k++)
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							- b_mat_alloc[(i + k) * col_ + j];
+			break;
+		case 2:
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_ite; i += 4) {
+				for (std::size_t j = 0; j < col_; j += 2)
+					for (std::size_t k = 0; k < 4; k++) {
+						vec2double a = _mm_set_pd(mat_[(i + k) * col_ + j + 1],
+									  mat_[(i + k) * col_ + j]);
+						vec2double b = _mm_set_pd(b_mat_alloc[(i + k) * col_ + j + 1],
+									  b_mat_alloc[(i + k) * col_ + j]);
+						vec2double result = _mm_sub_pd(a, b);
+						_mm_storeu_pd(&c_mat_alloc[(i + k) * col_ + j], result);
+					}
+
+				for (std::size_t j = col_ite; j < col_; j++)
+					for (std::size_t k = 0; k < 4; k++)
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							- b_mat_alloc[(i + k) * col_ + j];
+			}
+
+			break;
+		default:
+#pragma omp parallel for
+			for (std::size_t i = 0; i < row_ite; i += 4) {
+				for (std::size_t j = 0; j < col_; j += 4)
+					for (std::size_t k = 0; k < 4; k++) {
+						vec4double a = _mm256_set_pd(mat_[(i + k) * col_ + j + 3],
+									     mat_[(i + k) * col_ + j + 2],
+									     mat_[(i + k) * col_ + j + 1],
+									     mat_[(i + k) * col_ + j]);
+						vec4double b = _mm256_set_pd(b_mat_alloc[(i + k) * col_
+											 + j + 3],
+									     b_mat_alloc[(i + k) * col_
+											 + j + 2],
+									     b_mat_alloc[(i + k) * col_
+											 + j + 1],
+									     b_mat_alloc[(i + k) * col_ + j]);
+						vec4double result = _mm256_sub_pd(a, b);
+						_mm256_storeu_pd(&c_mat_alloc[(i + k) * col_ + j], result);
+					}
+
+				for (std::size_t j = col_ite; j < col_; j++)
+					for (std::size_t k = 0; k < 4; k++)
+						c_mat_alloc[(i + k) * col_ + j] = mat_[(i + k) * col_ + j]
+							- b_mat_alloc[(i + k) * col_ + j];
+			}
+
+			break;
+		}
+		
+#pragma omp parallel for collapse(2)
+		for (std::size_t i = row_ite; i < row_; i++)
+			for (std::size_t j = 0; j < col_; j++)
+				c_mat_alloc[i * col_ + j] = mat_[i * col_ + j]
+					- b_mat_alloc[i * col_ + j];
+		break;
+	}
+
 
 	return C;
 }
@@ -603,7 +1025,7 @@ cnet::mat<T> cnet::mat<T>::operator*(const cnet::mat<T> &B)
 	// Pad the matrices
 	std::size_t max_dimension =
 		std::max(std::max(row_, B.get_rows()), std::max(col_, B.get_cols()));
-	std::size_t n = precomputed_log_2_n[fast_log2(max_dimension) + 1];
+	std::size_t n = precomputed_pow_2_n[fast_log2(max_dimension) + 1];
 
 	pad_matrix_to_power_2(*this, &p_a, n);
 	pad_matrix_to_power_2(B, &p_b, n);
