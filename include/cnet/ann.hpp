@@ -13,6 +13,7 @@
 
 #include <cstddef>
 
+#include "mat.hpp"
 #include "afunc.hpp"
 #include "layer.hpp"
 
@@ -26,7 +27,7 @@ namespace cnet {
 	template<class T>
 	class ann {
 	public:
-		ann(const nn_arch *arch, std::size_t l, enum AFUNC_TYPE afunc);
+		ann(const nn_arch *arch, std::size_t l, std::unique_ptr<afunc::act_func<T>> &&func);
 		~ann(void);
 		
 		mat<T> feedforward(const mat<T> &X);
@@ -45,7 +46,7 @@ namespace cnet {
 		
 	private:
 		std::size_t l_;
-		layer<T> *layers_;
+		model::layer<T> *layers_;
 	};
 }
 

@@ -31,27 +31,31 @@ namespace cnet {
 		mat(void);
 		~mat(void);
 		
-		void resize(std::size_t rows, std::size_t cols);
-		void resize(std::size_t rows, std::size_t cols, T initial);
+		mat<T> &resize(std::size_t rows, std::size_t cols);
+		mat<T> &resize(std::size_t rows, std::size_t cols, T initial);
 		std::size_t get_rows(void) const;
 		std::size_t get_cols(void) const;
-		mat<T> transpose(void);
+		mat<T> transpose(void) const;
+		mat<T> &transpose_(void);
 		T *get_mat_alloc(void) const;
-		
-#if __AVX512F__
-		cnet::vec8double *get_vec_mat_alloc(void) const;
-#else
 		cnet::vec4double *get_vec_mat_alloc(void) const;
-#endif
-		
+		mat<T> &rand(T a, T b);
+		T grand_sum(void) const;
 		
 		T &operator()(std::size_t row, std::size_t col) const;
-		mat<T> operator+(const mat<T> &B);
-		mat<T> operator-(const mat<T> &B);
-		mat<T> operator*(const mat<T> &B);
 		void operator=(std::initializer_list<std::initializer_list<T>> m);
 		void operator=(const mat<T> &B);
-		
+		mat<T> operator+(const mat<T> &B) const;
+		mat<T> operator-(const mat<T> &B) const;
+		mat<T> operator*(const mat<T> &B) const;
+		mat<T> operator*(T a) const;
+		mat<T> operator^(const mat<T> &B) const; // element-wise multiplication or Hadamard product
+		void operator+=(const mat<T> &B);
+		void operator-=(const mat<T> &B);
+		void operator*=(const mat<T> &B);
+		void operator*=(T a);
+		void operator^=(const mat<T> &B); // element-wise multiplication or Hadamard product
+				
 		friend std::ostream &operator<<(std::ostream &os, const mat<T> &m) {
 			os << "[";
 			for (std::size_t i = 0; i < m.row_; i++) {
@@ -78,18 +82,8 @@ namespace cnet {
 	private:
 		std::size_t row_, col_;
 		T *mat_;
-#if __AVX512F__
-		cnet::vec8double *vec_mat_alloc;
-#else
 		cnet::vec4double *vec_mat_alloc;
-#endif
 	};
-
-	extern void rand_mat(mat<double> &m, double a, double b);
-	extern void rand_mat(mat<std::complex<double>> &m, double a, double b);
-	
-	template<typename T>
-	extern T grand_sum(mat<T> &m);
 }
 
 #endif

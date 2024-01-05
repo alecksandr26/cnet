@@ -1,8 +1,14 @@
 #include <iostream>
 #include <chrono>
+#include <memory>
+
 #include "cnet/mat.hpp"
+#include "cnet/afunc.hpp"
+#include "cnet/layer.hpp"
 
 using namespace cnet;
+using namespace cnet::model;
+using namespace cnet::afunc;
 
 int main(void)
 {
@@ -61,28 +67,27 @@ int main(void)
 	// |986.00000 1028.00000 1070.00000 1112.00000|
         // |1354.00000 1412.00000 1470.00000 1528.00000|
 	
+	mat<double> X = {
+		{1, 2},
+		{3, 4}
+	};
 
-	// mat<double> X = {
-	// 	{1, 2},
-	// 	{3, 4}
-	// };
-
-	// mat<double> Y = {
-	// 	{1, 2},
-	// 	{3, 4}
-	// };
+	mat<double> Y = {
+		{1, 2},
+		{3, 4}
+	};
 
 	// [[7.000000	10.000000]
 	//  [15.000000	22.000000]]
 
 
-	mat<double> X = {
-		{1}
-	};
+	// mat<double> X = {
+	// 	{1}
+	// };
 
-	mat<double> Y = {
-		{2}
-	};
+	// mat<double> Y = {
+	// 	{2}
+	// };
 
 	// [[2]]
 	
@@ -100,7 +105,28 @@ int main(void)
 	// |750.00000 792.00000 834.00000|
 
 	// valgrind --leak-check=full
-	std::cout << C << std::endl;
+	// std::cout << C << std::endl;
+	
+	// std::cout << sigmoid(C) << std::endl;
+
+	layer<double> l(4, 4, std::make_unique<sigmoid<double>>());
+	l.W_.resize(4, 4, 1);
+	l.B_.resize(4, 1, 1);
+
+	std::cout << l.W_ << std::endl;
+	std::cout << l.B_ << std::endl;
+	
+	mat<double> X_IN = {
+		{0},
+		{1},
+		{2.5},
+		{5}
+	};
+
+	mat<double> S = l.W_ * X_IN;
+	std::cout << S << std::endl;
+	
+	std::cout << l.feedforward(X_IN) << std::endl;
 	
 	// https:en.algorithmica.org/hpc/external-memory/oblivious/#algorithm
 
@@ -168,15 +194,16 @@ int main(void)
 	// Strassen Elapsed Time: 46.645130 ~ 48.601734 seconds
 	// Strassen Vectorized version Elapsed Time: 19.657362 ~ 19.764867 seconds
 	// The paralleized Strassen Vectorized version Elapsed Time: 2.929702 ~ 2.996234 seconds
-	
+
+	// --------------------- here ----------------------------
 	static constexpr int size_mat = 1000;
 	
 	mat<double> A(size_mat, size_mat);
 	mat<double> B(size_mat, size_mat);
 	
 	// Assing random values
-	rand_mat(A, 0.0, 1.0);
-	rand_mat(B, 0.0, 1.0);
+	A.rand(0.0, 1.0);
+	B.rand(0.0, 1.0);
 	
 	auto beg = std::chrono::high_resolution_clock::now();
 	
@@ -205,7 +232,7 @@ int main(void)
 	
 	mat<double> R1;
 	// for (std::size_t i = 0; i < 10; i++)
-	R1 = A - B;
+	R1 = A + B;
 	
 	end = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
@@ -214,6 +241,55 @@ int main(void)
 	seconds = duration.count() / 1e6;
 	
 	std::cout << "Mat add Elapsed Time: " << std::fixed << std::setprecision(6)
+		  << seconds << " seconds" << std::endl;
+
+
+	// Perform the scalar product
+	// The new version almost the finall version Mat scalar product Elapsed Time: 0.001471 seconds
+
+	beg = std::chrono::high_resolution_clock::now();
+	
+	// for (std::size_t i = 0; i < 10; i++)
+	R1 = A * 10.0;
+	
+	end = std::chrono::high_resolution_clock::now();
+	duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
+	
+	// Convert microseconds to seconds
+	seconds = duration.count() / 1e6;
+	
+	std::cout << "Mat scalar product Elapsed Time: " << std::fixed << std::setprecision(6)
+		  << seconds << " seconds" << std::endl;
+
+
+	// Perform the sigmoid function
+
+	beg = std::chrono::high_resolution_clock::now();
+	
+	// for (std::size_t i = 0; i < 10; i++)
+	R1 = sigmoid<double>().func(A);
+	
+	end = std::chrono::high_resolution_clock::now();
+	duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
+	
+	// Convert microseconds to seconds
+	seconds = duration.count() / 1e6;
+	
+	std::cout << "Mat sigmoid func Elapsed Time: " << std::fixed << std::setprecision(6)
+		  << seconds << " seconds" << std::endl;
+	
+	beg = std::chrono::high_resolution_clock::now();
+	
+	// for (std::size_t i = 0; i < 10; i++)
+	R1 = relu<double>().func(A);
+	
+	end = std::chrono::high_resolution_clock::now();
+	duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
+	
+	// Convert microseconds to seconds
+	seconds = duration.count() / 1e6;
+	
+	std::cout << "Mat relu func Elapsed Time: " << std::fixed << std::setprecision(6)
 		  << seconds << " seconds" << std::endl;
 	
 	return 0;

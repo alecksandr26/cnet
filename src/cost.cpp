@@ -1,26 +1,26 @@
-
-#include "../include/cnet/cost.hpp"
-
-#include "../include/cnet/ann.hpp"
-#include "../include/cnet/mat.hpp"
-
+#include "cnet/mat.hpp"
+#include "cnet/cost.hpp"
 #include <cstddef>
+#include <iostream>
 
-template<typename T>
-long double cnet::mse(cnet::ann<T> &ann, cnet::mat<T> *input, cnet::mat<T> *output,
-		      std::size_t train_size)
+
+template<class T>
+cnet::mat<T> cnet::cost::mse<T>::func(const cnet::mat<T> *A, const cnet::mat<T> *Y, std::size_t in_size) const
 {
-	long double cost = 0.0;
-
-	for (std::size_t i = 0; i < train_size; i++) {
-		cnet::mat<T> Y	   = ann.feedforward(input[i]);
-		cnet::mat<T> dif_Y = output[i] - Y;
-		cnet::mat<T> C	   = dif_Y * dif_Y.transpose();
-		cost += cnet::grand_sum(C);
-	}
-
-	return cost;
+	cnet::mat<T> cost(A[0].get_rows(), A[0].get_cols(), 0.0);
+	
+	for (std::size_t i = 0; i < in_size; i++)
+		cost += (A[i] - Y[i]) ^ (A[i] - Y[i]);;
+	
+	// We need to implmenet the / for the mat operation
+	return cost * (1.0 / in_size);
 }
 
-template long double cnet::mse(cnet::ann<double> &ann, cnet::mat<double> *input,
-			       cnet::mat<double> *output, std::size_t train_size);
+template<class T>
+cnet::mat<T> cnet::cost::mse<T>::dfunc_da(const cnet::mat<T> &A, const cnet::mat<T> &Y, std::size_t in_size) const
+{
+	return (A - Y) * (2.0 / in_size);
+}
+
+template class cnet::cost::cost_func<double>;
+template class cnet::cost::mse<double>;

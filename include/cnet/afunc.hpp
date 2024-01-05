@@ -13,17 +13,31 @@
 #include "mat.hpp"
 
 namespace cnet {
-	enum AFUNC_TYPE {
-		CNET_SIGMOID = 0,
-		CNET_RELU,
-		CNET_NONE
-	};
-	
-	template<typename T>
-	mat<T> &sigmoid(mat<T> &m);
+	namespace afunc {
+		
+		// This naming class needs a refactor
+		template<class T>
+		class act_func {
+		public:
+			virtual mat<T> func(const mat<T> &X) const = 0;
+			virtual mat<T> dfunc_dx(const mat<T> &X) const  = 0;
+		};
+		
+		template<class T>
+		class sigmoid : public act_func<T> {
+		public:
+			mat<T> func(const mat<T> &X) const override;
+			mat<T> dfunc_dx(const mat<T> &X) const override;
+		};
 
-	template<typename T>
-	mat<T> &relu(mat<T> &m);
+
+		template<class T>
+		class relu : public act_func<T> {
+		public:
+			mat<T> func(const mat<T> &X) const override;
+			mat<T> dfunc_dx(const mat<T> &X) const override;
+		};
+	}
 }
 
 
