@@ -19,7 +19,19 @@ inline cnet::vec4double _mm256_exp_pd(cnet::vec4double vec)
 }
 
 template<class T>
-cnet::mat<T> cnet::afunc::sigmoid<T>::func(const cnet::mat<T> &X) const
+cnet::mat<T> cnet::afunc::linear<T>::operator()(const cnet::mat<T> &X) const
+{
+	return cnet::mat<T>(X);
+}
+
+template<class T>
+cnet::mat<T> cnet::afunc::linear<T>::derivate(const cnet::mat<T> &X) const
+{
+	return cnet::mat<T>(X.get_rows(), X.get_cols(), 1.0);
+}
+
+template<class T>
+cnet::mat<T> cnet::afunc::sigmoid<T>::operator()(const cnet::mat<T> &X) const
 {
 	std::size_t row_ = X.get_rows();
 	std::size_t col_ = X.get_cols();
@@ -105,7 +117,7 @@ cnet::mat<T> cnet::afunc::sigmoid<T>::func(const cnet::mat<T> &X) const
 }
 
 template<class T>
-cnet::mat<T> cnet::afunc::sigmoid<T>::dfunc_dx(const cnet::mat<T> &X) const
+cnet::mat<T> cnet::afunc::sigmoid<T>::derivate(const cnet::mat<T> &X) const
 {
 	std::size_t row_ = X.get_rows();
 	std::size_t col_ = X.get_cols();
@@ -197,7 +209,7 @@ cnet::mat<T> cnet::afunc::sigmoid<T>::dfunc_dx(const cnet::mat<T> &X) const
 }
 
 template<class T>
-cnet::mat<T> cnet::afunc::relu<T>::func(const cnet::mat<T> &X) const
+cnet::mat<T> cnet::afunc::relu<T>::operator()(const cnet::mat<T> &X) const
 {
 	std::size_t row_ = X.get_rows();
 	std::size_t col_ = X.get_cols();
@@ -273,15 +285,14 @@ cnet::mat<T> cnet::afunc::relu<T>::func(const cnet::mat<T> &X) const
 	return Y;
 }
 
-
 template<class T>
-cnet::mat<T> cnet::afunc::relu<T>::dfunc_dx(const cnet::mat<T> &X) const
+cnet::mat<T> cnet::afunc::relu<T>::derivate(const cnet::mat<T> &X) const
 {
 	// super funny but yea the derivate of relu is `1`
 	return cnet::mat<T>(X.get_rows(), X.get_cols(), 1.0);
 }
 
-
-template class cnet::afunc::act_func<double>;
+template class cnet::afunc::afunc<double>;
+template class cnet::afunc::linear<double>;
 template class cnet::afunc::sigmoid<double>;
 template class cnet::afunc::relu<double>;

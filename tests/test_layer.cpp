@@ -12,15 +12,15 @@
 #include "cnet/cost.hpp"
 
 using namespace cnet;
-using namespace cnet::model;
+using namespace cnet::layer;
 
 TEST(LayerTest, TestFeedForwardSigmoidOne)
 {
-	layer<double> l(4, 4, std::make_unique<afunc::sigmoid<double>>());
-	
-	l.W_.resize(4, 4, 1);
-	l.B_.resize(4, 1, 1);
+	dense<double> L(4, std::make_unique<afunc::sigmoid<double>>());
 
+	// Build the layer
+	L.build(4, 1.0);
+	
 	mat<double> X = {
 		{0},
 		{1},
@@ -28,8 +28,8 @@ TEST(LayerTest, TestFeedForwardSigmoidOne)
 		{5}
 	};
 
-	mat<double> A = l.feedforward(X);
-
+	mat<double> A = L(X);
+	
 	for (std::size_t i = 0; i < A.get_rows(); i++)
 		for (std::size_t j = 0; j < A.get_cols(); j++)
 			EXPECT_NEAR(A(i, j), 0.999, 1e-3);
@@ -37,10 +37,14 @@ TEST(LayerTest, TestFeedForwardSigmoidOne)
 
 TEST(LayerTest, TestFeedForwardSigmoidZero)
 {
-	layer<double> l(4, 4, std::make_unique<afunc::sigmoid<double>>());
 	
-	l.W_.resize(4, 4, -1);
-	l.B_.resize(4, 1, 0.0);
+	dense<double> L(4, std::make_unique<afunc::sigmoid<double>>());
+	
+	// Dont use bias
+	L.set_use_bias(false);
+
+	// Build the layer
+	L.build(4, -1.0);	// With negative as init val
 
 	mat<double> X = {
 		{0},
@@ -49,7 +53,7 @@ TEST(LayerTest, TestFeedForwardSigmoidZero)
 		{5}
 	};
 
-	mat<double> A = l.feedforward(X);
+	mat<double> A = L(X);
 
 	for (std::size_t i = 0; i < A.get_rows(); i++)
 		for (std::size_t j = 0; j < A.get_cols(); j++)
@@ -58,10 +62,9 @@ TEST(LayerTest, TestFeedForwardSigmoidZero)
 
 TEST(LayerTest, TestFeedForwardReLUPositive)
 {
-	layer<double> l(4, 4, std::make_unique<afunc::relu<double>>());
+	dense<double> L(4, std::make_unique<afunc::relu<double>>());
     
-	l.W_.resize(4, 4, 1);
-	l.B_.resize(4, 1, 1);
+	L.build(4, 1.0);
 
 	mat<double> X = {
 		{0},
@@ -70,7 +73,7 @@ TEST(LayerTest, TestFeedForwardReLUPositive)
 		{5}
 	};
 
-	mat<double> A = l.feedforward(X);
+	mat<double> A = L(X);
 
 	for (std::size_t i = 0; i < A.get_rows(); i++)
 		for (std::size_t j = 0; j < A.get_cols(); j++)
@@ -80,10 +83,11 @@ TEST(LayerTest, TestFeedForwardReLUPositive)
 
 TEST(LayerTest, TestFeedForwardReLUNegative)
 {
-	layer<double> l(4, 4, std::make_unique<afunc::relu<double>>());
-    
-	l.W_.resize(4, 4, -1);
-	l.B_.resize(4, 1, 0.0);
+	dense<double> L(4, std::make_unique<afunc::relu<double>>());
+
+	// Dont use bias
+	L.set_use_bias(false);
+	L.build(4, -1.0);
 
 	mat<double> X = {
 		{0},
@@ -92,7 +96,7 @@ TEST(LayerTest, TestFeedForwardReLUNegative)
 		{5}
 	};
 
-	mat<double> A = l.feedforward(X);
+	mat<double> A = L(X);
 
 	for (std::size_t i = 0; i < A.get_rows(); i++)
 		for (std::size_t j = 0; j < A.get_cols(); j++)
@@ -108,7 +112,9 @@ TEST(LayerTest, TestFitLayerAnd)
 	constexpr double lr = 100.0;
 	
 	// Train a perceptron of and
-	layer<double> p_and(2, 1, std::make_unique<afunc::sigmoid<double>>());
+	dense<double> p_and(1, std::make_unique<afunc::sigmoid<double>>());
+
+	p_and.build(2, 0.0);
 
 	// Initailize the values randomly
 	// p_and.rand_range(0.0, 1.0); 
@@ -176,15 +182,16 @@ TEST(LayerTest, TestFitLayerAnd)
 	// 	{{0.0}},
 	// 	{{0.0}}
 	// };
+	cost::mse<double> C;
 	
 	mat<double> A[4];
 	for (std::size_t np = 0; np < epochs; np++) {
 		for (std::size_t i = 0; i < 4; i++) {
-			A[i] = p_and.feedforward(X[i]);
-			p_and.fit(cost::mse<double>().dfunc_da(A[i], Y[i], 4), lr, X[i]);
+			A[i] = p_and(X[i]);
+			p_and.fit_backprop(C.derivate(A[i], Y[i], 4), lr, X[i]);
 		}
 		
-		std::cout << "Epoch: " << np << " MSE: \n" << cost::mse<double>().func(A, Y, 4) << std::endl;
+		std::cout << "Epoch: " << np << " MSE: \n" << C(A, Y, 4) << std::endl;
 	}
 
 	std::cout << "-------------" << std::endl;
@@ -195,7 +202,7 @@ TEST(LayerTest, TestFitLayerAnd)
 		std::cout << "X[" << i << "]: " << std::endl;
 		std::cout << X[i] << std::endl;
 		
-		A[i] = p_and.feedforward(X[i]);
+		A[i] = p_and(X[i]);
 		std::cout << "A: " << std::endl;
 		std::cout << A[i] << std::endl;
 		std::cout << "Y[" << i << "]: " << std::endl;
@@ -205,22 +212,22 @@ TEST(LayerTest, TestFitLayerAnd)
 	
 }
 
-// Test your big layer
+// Test your big dense
 TEST(LayerTest, TestFitBigLayer) {
-	// For the big layer, neurons proccessing 10 inputs 4 outputs
+	// For the big dense, neurons proccessing 10 inputs 4 outputs
 	// constexpr std::size_t epochs = 100;
 	// constexpr double lr = 5.0;
+	
+	// dense<double> p_big(4, std::make_unique<afunc::sigmoid<double>>());
+	// p_big.build(10);
 
-	// layer<double> p_big(10, 4, std::make_unique<afunc::sigmoid<double>>());
-
-	// For the logic gates Two neurons proccessing 2 inputs 4 outputs
+	// For the logic gates Two neurons proccessing 2 inputs 5 outputs
 	constexpr std::size_t epochs = 32;
 	constexpr double lr = 100.0;
 	
-	layer<double> p_big(2, 5, std::make_unique<afunc::sigmoid<double>>());
+	dense<double> p_big(5, std::make_unique<afunc::sigmoid<double>>());
 	
-	// Randomly initialize weights
-	// p_big.rand_range(0.0, 1.0);
+	p_big.build(2, 0.0);
 	
 	std::cout << p_big << std::endl;
 
@@ -265,14 +272,16 @@ TEST(LayerTest, TestFitBigLayer) {
 		{{1.0}, {1.0}, {0.0}, {0.0}, {0.0}}
 	};
 
+	cost::mse<double> C;	
+
 	mat<double> A[4];
 	for (std::size_t np = 0; np < epochs; np++) {
 		for (std::size_t i = 0; i < 4; i++) {
-			A[i] = p_big.feedforward(X[i]);
-			p_big.fit(cost::mse<double>().dfunc_da(A[i], Y[i], 4), lr, X[i]);
+			A[i] = p_big(X[i]);
+			p_big.fit_backprop(C.derivate(A[i], Y[i], 4), lr, X[i]);
 		}
 
-		std::cout << "Epoch: " << np << " MSE: \n" << cost::mse<double>().func(A, Y, 4) << std::endl;
+		std::cout << "Epoch: " << np << " MSE: \n" << C(A, Y, 4) << std::endl;
 	}
 
 	std::cout << "-------------" << std::endl;
@@ -283,16 +292,15 @@ TEST(LayerTest, TestFitBigLayer) {
 		std::cout << "X[" << i << "]: " << std::endl;
 		std::cout << X[i] << std::endl;
 
-		A[i] = p_big.feedforward(X[i]);
+		A[i] = p_big(X[i]);
 		std::cout << "A: " << std::endl;
 		std::cout << A[i] << std::endl;
 		std::cout << "Y[" << i << "]: " << std::endl;
 		std::cout << Y[i] << std::endl;
-		for (std::size_t k = 0; k < A[i].get_rows(); k++)
+		for (std::size_t k = 0; k < A[i].get_rows() - 1; k++)
 			for (std::size_t j = 0; j < A[i].get_cols(); j++) {
 				// It is not going to assert the xor 
-				if (k < 4)
-					EXPECT_NEAR(A[i](k, j), Y[i](k, j), 1e-1);
+				EXPECT_NEAR(A[i](k, j), Y[i](k, j), 1e-1);
 			}
 	}
 }

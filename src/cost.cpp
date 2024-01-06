@@ -5,7 +5,8 @@
 
 
 template<class T>
-cnet::mat<T> cnet::cost::mse<T>::func(const cnet::mat<T> *A, const cnet::mat<T> *Y, std::size_t in_size) const
+cnet::mat<T> cnet::cost::mse<T>::operator()(const cnet::mat<T> *A, const cnet::mat<T> *Y,
+					    std::size_t in_size) const
 {
 	cnet::mat<T> cost(A[0].get_rows(), A[0].get_cols(), 0.0);
 	
@@ -17,7 +18,8 @@ cnet::mat<T> cnet::cost::mse<T>::func(const cnet::mat<T> *A, const cnet::mat<T> 
 }
 
 template<class T>
-cnet::mat<T> cnet::cost::mse<T>::dfunc_da(const cnet::mat<T> &A, const cnet::mat<T> &Y, std::size_t in_size) const
+cnet::mat<T> cnet::cost::mse<T>::derivate(const cnet::mat<T> &A, const cnet::mat<T> &Y,
+					  std::size_t in_size) const
 {
 	return (A - Y) * (2.0 / in_size);
 }

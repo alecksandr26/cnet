@@ -18,7 +18,7 @@ using namespace afunc;
 TEST(TestAFunc, TestSigmoid) {
 	mat<double> A(10, 10, 15.0);
 
-	mat<double> B = sigmoid<double>().func(A);
+	mat<double> B = sigmoid<double>()(A);
 	
 	std::cout << B << std::endl;
 
@@ -28,7 +28,7 @@ TEST(TestAFunc, TestSigmoid) {
 	
 	A.resize(10, 10, 0.0);
 
-	B = sigmoid<double>().func(A);
+	B = sigmoid<double>()(A);
 
 	for (std::size_t i = 0; i < B.get_rows(); i++)
 		for (std::size_t j = 0; j < B.get_cols(); j++)
@@ -36,7 +36,7 @@ TEST(TestAFunc, TestSigmoid) {
 
 	A.resize(10, 10, -15.0);
 	
-	B = sigmoid<double>().func(A);
+	B = sigmoid<double>()(A);
 
 	for (std::size_t i = 0; i < B.get_rows(); i++)
 		for (std::size_t j = 0; j < B.get_cols(); j++)
@@ -48,7 +48,7 @@ TEST(TestAFunc, TestSigmoid) {
 TEST(TestAFunc, TestRelu) {
 	mat<double> A(10, 10, 15.0);
 
-	mat<double> B = relu<double>().func(A);
+	mat<double> B = relu<double>()(A);
 	
 	std::cout << B << std::endl;
 	
@@ -58,7 +58,7 @@ TEST(TestAFunc, TestRelu) {
 
 	A.resize(10, 10, - 15.0);
 
-	B = relu<double>().func(A);
+	B = relu<double>()(A);
 
 	for (std::size_t i = 0; i < B.get_rows(); i++)
 		for (std::size_t j = 0; j < B.get_cols(); j++)

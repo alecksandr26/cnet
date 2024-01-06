@@ -7,7 +7,7 @@
 #include "cnet/layer.hpp"
 
 using namespace cnet;
-using namespace cnet::model;
+using namespace cnet::layer;
 using namespace cnet::afunc;
 
 int main(void)
@@ -109,12 +109,12 @@ int main(void)
 	
 	// std::cout << sigmoid(C) << std::endl;
 
-	layer<double> l(4, 4, std::make_unique<sigmoid<double>>());
-	l.W_.resize(4, 4, 1);
-	l.B_.resize(4, 1, 1);
-
-	std::cout << l.W_ << std::endl;
-	std::cout << l.B_ << std::endl;
+	dense<double> L(4, std::make_unique<sigmoid<double>>());
+	
+	// L.set_use_bias(false);
+	L.build(4, 1.0);
+	
+	std::cout << L << std::endl;
 	
 	mat<double> X_IN = {
 		{0},
@@ -122,11 +122,8 @@ int main(void)
 		{2.5},
 		{5}
 	};
-
-	mat<double> S = l.W_ * X_IN;
-	std::cout << S << std::endl;
 	
-	std::cout << l.feedforward(X_IN) << std::endl;
+	std::cout << L(X_IN) << std::endl;
 	
 	// https:en.algorithmica.org/hpc/external-memory/oblivious/#algorithm
 
@@ -263,11 +260,10 @@ int main(void)
 
 
 	// Perform the sigmoid function
-
 	beg = std::chrono::high_resolution_clock::now();
 	
 	// for (std::size_t i = 0; i < 10; i++)
-	R1 = sigmoid<double>().func(A);
+	R1 = sigmoid<double>()(A);
 	
 	end = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
@@ -281,7 +277,7 @@ int main(void)
 	beg = std::chrono::high_resolution_clock::now();
 	
 	// for (std::size_t i = 0; i < 10; i++)
-	R1 = relu<double>().func(A);
+	R1 = relu<double>()(A);
 	
 	end = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);

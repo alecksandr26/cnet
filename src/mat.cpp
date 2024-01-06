@@ -348,7 +348,7 @@ cnet::mat<T>::mat(std::size_t rows, std::size_t cols)
 }
 
 template<class T>
-cnet::mat<T>::mat(std::size_t rows, std::size_t cols, T initial)
+cnet::mat<T>::mat(std::size_t rows, std::size_t cols, T init_val)
 {
 	if (rows == 0 || cols == 0)
 		throw std::invalid_argument(
@@ -367,20 +367,20 @@ cnet::mat<T>::mat(std::size_t rows, std::size_t cols, T initial)
 	std::size_t n = row_ * col_;
 	std::size_t n_ite_8 = n - (n % 8);
 	std::size_t n_ite_4 = n - (n % 4);
-	vec4double vec_initial = _mm256_set_pd(initial, initial, initial, initial);
+	vec4double vec_initial = _mm256_set_pd(init_val, init_val, init_val, init_val);
 
 	switch (n) {
 	case 1:
-		mat_[0] = initial;
+		mat_[0] = init_val;
 		break;
 	case 2:
-		mat_[0] = initial;
-		mat_[1] = initial;
+		mat_[0] = init_val;
+		mat_[1] = init_val;
 		break;
 	case 3:
-		mat_[0] = initial;
-		mat_[1] = initial;
-		mat_[2] = initial;
+		mat_[0] = init_val;
+		mat_[1] = init_val;
+		mat_[2] = init_val;
 		break;
 	case 4: case 5: case 6: case 7:
 #pragma omp parallel for
@@ -389,7 +389,7 @@ cnet::mat<T>::mat(std::size_t rows, std::size_t cols, T initial)
 			_mm256_storeu_pd(&mat_[i], vec_initial);
 
 		for (std::size_t i = n_ite_4; i < n; i++)
-			mat_[i] = initial;
+			mat_[i] = init_val;
 		
 		break;
 	default:
@@ -403,7 +403,7 @@ cnet::mat<T>::mat(std::size_t rows, std::size_t cols, T initial)
 		}
 
 		for (std::size_t i = n_ite_8; i < n; i++)
-			mat_[i] = initial;
+			mat_[i] = init_val;
 		
 		break;
 	}
@@ -492,7 +492,7 @@ cnet::mat<T> &cnet::mat<T>::resize(std::size_t rows, std::size_t cols)
 }
 
 template<class T>
-cnet::mat<T> &cnet::mat<T>::resize(std::size_t rows, std::size_t cols, T initial)
+cnet::mat<T> &cnet::mat<T>::resize(std::size_t rows, std::size_t cols, T init_val)
 {
 	if (!(rows == row_ && cols == col_)) {
 		if (mat_) free_mem_matrix((void *) mat_);
@@ -505,20 +505,20 @@ cnet::mat<T> &cnet::mat<T>::resize(std::size_t rows, std::size_t cols, T initial
 	std::size_t n = row_ * col_;
 	std::size_t n_ite_8 = n - (n % 8);
 	std::size_t n_ite_4 = n - (n % 4);
-	vec4double vec_initial = _mm256_set_pd(initial, initial, initial, initial);
+	vec4double vec_initial = _mm256_set_pd(init_val, init_val, init_val, init_val);
 
 	switch (n) {
 	case 1:
-		mat_[0] = initial;
+		mat_[0] = init_val;
 		break;
 	case 2:
-		mat_[0] = initial;
-		mat_[1] = initial;
+		mat_[0] = init_val;
+		mat_[1] = init_val;
 		break;
 	case 3:
-		mat_[0] = initial;
-		mat_[1] = initial;
-		mat_[2] = initial;
+		mat_[0] = init_val;
+		mat_[1] = init_val;
+		mat_[2] = init_val;
 		break;
 	case 4: case 5: case 6: case 7:
 #pragma omp parallel for
@@ -527,7 +527,7 @@ cnet::mat<T> &cnet::mat<T>::resize(std::size_t rows, std::size_t cols, T initial
 			_mm256_storeu_pd(&mat_[i], vec_initial);
 
 		for (std::size_t i = n_ite_4; i < n; i++)
-			mat_[i] = initial;
+			mat_[i] = init_val;
 		
 		break;
 	default:
@@ -541,7 +541,7 @@ cnet::mat<T> &cnet::mat<T>::resize(std::size_t rows, std::size_t cols, T initial
 		}
 
 		for (std::size_t i = n_ite_8; i < n; i++)
-			mat_[i] = initial;
+			mat_[i] = init_val;
 		
 		break;
 	}
@@ -624,7 +624,7 @@ cnet::mat<T> cnet::mat<T>::operator+(const cnet::mat<T> &B) const
 {
 	if (col_ != B.get_cols() || row_ != B.get_rows())
 		throw std::invalid_argument(
-			"invalid argument: Matrices have different sizes");
+					    "invalid argument: Matrices have different sizes");
 
 	// Alloc the matrix
 	cnet::mat<T> C(row_, col_);
@@ -918,7 +918,7 @@ template<class T>
 cnet::mat<T> cnet::mat<T>::operator*(const cnet::mat<T> &B) const
 {
 	if (col_ != B.get_rows())
-		throw std::invalid_argument("invalid argument: n cols != n rows");
+		throw std::invalid_argument("invalid argument: Matrices have different sizes");
 
 	// Alloc padded matrices
 	T *p_a, *p_b, *p_c;
@@ -1406,6 +1406,7 @@ void cnet::mat<T>::operator*=(T a)
 	}
 }
 
+// TODO: Let the user to chose its own randomizer funciont
 template<class T>
 cnet::mat<T> &cnet::mat<T>::rand(T a, T b)
 {
@@ -1415,7 +1416,7 @@ cnet::mat<T> &cnet::mat<T>::rand(T a, T b)
 	std::random_device		 rd;
 	std::mt19937			 gen(rd());
 	std::uniform_real_distribution<> dis(a, b);
-
+	
 #pragma omp parallel for collapse(2)	
 	for (std::size_t i = 0; i < row_; i++)
 		for (std::size_t j = 0; j < col_; j++)

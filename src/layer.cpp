@@ -10,91 +10,115 @@
 #include <omp.h>
 
 template<class T>
-cnet::model::layer<T>::layer(std::size_t in, std::size_t out)
+cnet::layer::dense<T>::dense(std::size_t units)
 {
-	in_    = in;
-	out_   = out;
+	units_   = units;
+	func_ = std::make_unique<cnet::afunc::linear<T>>();
+	in_ = 0;
+	built_ = false;
+	use_bias_ = true;
+}
+
+
+template<class T>
+cnet::layer::dense<T>::dense(std::size_t units, std::unique_ptr<afunc::afunc<T>> &&func)
+{
+	units_   = units;
+	func_ = std::move(func);
+	in_ = 0;
+	built_ = false;
+	use_bias_ = true;
+}
+
+template<class T>
+cnet::layer::dense<T>::dense(void)
+{
+	units_ = in_ = 0;
 	func_ = NULL;
-
-	// Alloc the matrices
-	W_.resize(out, in, 0.0);
-	B_.resize(out, 1, 0.0);
+	built_ = false;
+	use_bias_ = true;
 }
 
 template<class T>
-cnet::model::layer<T>::layer(std::size_t in, std::size_t out, std::unique_ptr<afunc::act_func<T>> &&func)
+cnet::layer::dense<T>::~dense(void)
 {
-	in_    = in;
-	out_   = out;
-	func_ = std::move(func);
-	
-	// Alloc the matrices
-	W_.resize(out, in, 0.0);
-	B_.resize(out, 1, 0.0);
-}
-
-template<class T>
-cnet::model::layer<T>::layer(void)
-{
-	out_ = in_ = 0;
+	units_ = in_ = 0;
+	built_ = false;
 	func_ = NULL;
 }
 
 template<class T>
-void cnet::model::layer<T>::mod(std::size_t in, std::size_t out, std::unique_ptr<afunc::act_func<T>> &&func)
+void cnet::layer::dense<T>::build(std::size_t in_size)
 {
-	in_    = in;
-	out_   = out;
-	func_ = std::move(func);
+	if (units_ == 0)
+		throw std::invalid_argument("invalid layer: Layer is not initlized");
+
+	in_ = in_size;
+	W_.resize(units_, in_);
 	
-	// Realloc the matrices
-	W_.resize(out, in, 0.0);
-	B_.resize(out, 1, 0.0);
+	if (use_bias_)
+		B_.resize(units_, 1);
+	
+	// By default initi the values between 0.0 to 1.0
+	W_.rand(0.0, 1.0);
+	if (use_bias_)
+		B_.rand(0.0, 1.0);
+	
+	built_ = true;
 }
 
 template<class T>
-void cnet::model::layer<T>::mod(std::size_t in, std::size_t out)
+void cnet::layer::dense<T>::build(std::size_t in_size, T init_val)
 {
-	in_  = in;
-	out_ = out;
+	if (units_ == 0)
+		throw std::invalid_argument("invalid layer: Layer is not initlized");
 
-	// Realloc the matrices
-	W_.resize(out, in, 0.0);
-	B_.resize(out, 1, 0.0);
+	in_ = in_size;
+	W_.resize(units_, in_, init_val);
+	if (use_bias_)
+		B_.resize(units_, 1, init_val);
+	built_ = true;
 }
 
 template<class T>
-void cnet::model::layer<T>::mod(std::unique_ptr<afunc::act_func<T>> &&func)
-{
-	func_ = std::move(func);
-}
-
-template<class T>
-void cnet::model::layer<T>::rand_range(T a, T b)
+void cnet::layer::dense<T>::rand_range(T a, T b)
 {
 	W_.rand(a, b);
-	B_.rand(a, b);
+	
+	if (use_bias_)
+		B_.rand(a, b);
 }
 
 template<class T>
-cnet::mat<T> cnet::model::layer<T>::feedforward(const cnet::mat<T> &X) const
+cnet::mat<T> cnet::layer::dense<T>::operator()(const cnet::mat<T> &X)
 {
+	// Build the layer
+	if (!built_)
+		build(X.get_rows());
+	
 	if (X.get_cols() != 1 || X.get_rows() != W_.get_cols())
 		throw std::invalid_argument("invalid argument: Matrices has different sizes");
 	
 	// The feedforward operation
-	return func_->func(W_ * X + B_);
+	if (!use_bias_)
+		return (*func_)(W_ * X);
+	
+	return (*func_)(W_ * X + B_);
 }
 
 template<class T>
-void cnet::model::layer<T>::fit_back_prog(const cnet::mat<T> &E, double lr, const cnet::mat<T> &A)
+void cnet::layer::dense<T>::fit_backprop(const cnet::mat<T> &E, double lr, const cnet::mat<T> &A)
 {
+	if (units_ == 0)
+		throw std::invalid_argument("invalid layer: Layer is not initlized");
+	
 	if (E.get_cols() != 1 || A.get_cols() != 1 || A.get_rows() != W_.get_cols())
 		throw std::invalid_argument("invalid argument: Matrices has different sizes");
 	
 	// Update the bias by error
-	cnet::mat<T> df_dx = func_->dfunc_dx(W_ * A + B_);
-	B_ -= df_dx ^ (E * lr);
+	cnet::mat<T> df_dx = func_->derivate(W_ * A + B_);
+	if (use_bias_)
+		B_ -= df_dx ^ (E * lr);
 
 	std::size_t rows = W_.get_rows(), cols = W_.get_cols();
 	std::size_t n = rows * cols;
@@ -196,12 +220,51 @@ void cnet::model::layer<T>::fit_back_prog(const cnet::mat<T> &E, double lr, cons
 		break;
 	}
 	}
+	
 	// // Update the weights by error
 	// for (std::size_t i = 0; i < W_.get_rows(); i++)
 	// 	for (std::size_t j = 0; j < W_.get_cols(); j++)
 	// 		W_(i, j) -= lr * E(i, 0) * df_dx(i, 0) * A(j, 0);
-	
-	
 }
 
-template class cnet::model::layer<double>;
+template<class T>
+std::size_t cnet::layer::dense<T>::get_units(void) const
+{
+	return units_;
+}
+
+template<class T>
+std::size_t cnet::layer::dense<T>::get_in_size(void) const
+{
+	return in_;
+}
+
+template<class T>
+std::size_t cnet::layer::dense<T>::get_use_bias(void) const
+{
+	return use_bias_;
+}
+
+template<class T>
+void cnet::layer::dense<T>::set_units(std::size_t units)
+{
+	units_ = units;
+	
+	// Needs to rebuild the layer
+	built_ = false;
+}
+
+template<class T>
+void cnet::layer::dense<T>::set_afunc(std::unique_ptr<cnet::afunc::afunc<T>> &&func)
+{
+	func_ = std::move(func);
+}
+
+template<class T>
+void cnet::layer::dense<T>::set_use_bias(bool use_bias)
+{
+	use_bias_ = use_bias;
+}
+
+template class cnet::layer::layer<double>;
+template class cnet::layer::dense<double>;

@@ -27,7 +27,7 @@ namespace cnet {
 	template<class T>
 	class ann {
 	public:
-		ann(const nn_arch *arch, std::size_t l, std::unique_ptr<afunc::act_func<T>> &&func);
+		ann(const nn_arch *arch, std::size_t l, std::unique_ptr<afunc::afunc<T>> &&func);
 		~ann(void);
 		
 		mat<T> feedforward(const mat<T> &X);
@@ -46,7 +46,7 @@ namespace cnet {
 		
 	private:
 		std::size_t l_;
-		model::layer<T> *layers_;
+		layer::dense<T> *layers_;
 	};
 }
 

@@ -9,16 +9,19 @@
 #include <memory>
 
 template<class T>
-cnet::ann<T>::ann(const cnet::nn_arch *arch, std::size_t l, std::unique_ptr<afunc::act_func<T>> &&func)
+cnet::ann<T>::ann(const cnet::nn_arch *arch, std::size_t l, std::unique_ptr<afunc::afunc<T>> &&func)
 {
 	l_ = l;
-	layers_ = new model::layer<T>[l];
+	layers_ = new layer::dense<T>[l];
 	
 	std::size_t in, out;
 	for (std::size_t i = 1; i <= l_; i++) {
 		in  = arch[i - 1];
 		out = arch[i];
-		layers_[i - 1].mod(in, out, std::move(func));
+		
+		layers_[i - 1].set_units(out);
+		layers_[i - 1].set_afunc(std::move(func));
+		layers_[i - 1].build(in);
 	}
 }
 
@@ -40,7 +43,7 @@ cnet::mat<T> cnet::ann<T>::feedforward(const cnet::mat<T> &X)
 	cnet::mat<T> in = X, out;
 
 	for (std::size_t i = 0; i < l_; i++) {
-		out = layers_[i].feedforward(in);
+		out = layers_[i](in);
 		in  = out;
 	}
 

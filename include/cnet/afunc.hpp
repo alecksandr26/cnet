@@ -14,28 +14,34 @@
 
 namespace cnet {
 	namespace afunc {
-		
 		// This naming class needs a refactor
 		template<class T>
-		class act_func {
+		class afunc {
 		public:
-			virtual mat<T> func(const mat<T> &X) const = 0;
-			virtual mat<T> dfunc_dx(const mat<T> &X) const  = 0;
+			virtual mat<T> operator()(const mat<T> &X) const = 0;
+			virtual mat<T> derivate(const mat<T> &X) const  = 0;
+		};
+
+		template<class T>
+		class linear : public afunc<T> {
+		public:
+			mat<T> operator()(const mat<T> &X) const override;
+			mat<T> derivate(const mat<T> &X) const override;
 		};
 		
 		template<class T>
-		class sigmoid : public act_func<T> {
+		class sigmoid : public afunc<T> {
 		public:
-			mat<T> func(const mat<T> &X) const override;
-			mat<T> dfunc_dx(const mat<T> &X) const override;
+			mat<T> operator()(const mat<T> &X) const override;
+			mat<T> derivate(const mat<T> &X) const override;
 		};
 
 
 		template<class T>
-		class relu : public act_func<T> {
+		class relu : public afunc<T> {
 		public:
-			mat<T> func(const mat<T> &X) const override;
-			mat<T> dfunc_dx(const mat<T> &X) const override;
+			mat<T> operator()(const mat<T> &X) const override;
+			mat<T> derivate(const mat<T> &X) const override;
 		};
 	}
 }

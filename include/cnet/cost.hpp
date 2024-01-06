@@ -10,16 +10,17 @@ namespace cnet {
 		template<class T>
 		class cost_func {
 		public:
-			virtual mat<T> func(const mat<T> *A, const mat<T> *Y, std::size_t in_size) const = 0;
-			virtual mat<T> dfunc_da(const mat<T> &A, const mat<T> &Y, std::size_t in_size) const = 0;
+			virtual mat<T> operator()(const mat<T> *A, const mat<T> *Y,
+						  std::size_t in_size) const = 0;
+			virtual mat<T> derivate(const mat<T> &A, const mat<T> &Y, std::size_t in_size) const = 0;
 		};
 		
 
 		template<class T>
 		class mse : public cost_func<T> {
 		public:
-			mat<T> func(const mat<T> *A, const mat<T> *Y, std::size_t in_size) const override;
-			mat<T> dfunc_da(const mat<T> &A, const mat<T> &Y, std::size_t in_size) const override;
+			mat<T> operator()(const mat<T> *A, const mat<T> *Y, std::size_t in_size) const override;
+			mat<T> derivate(const mat<T> &A, const mat<T> &Y, std::size_t in_size) const override;
 		};
 	}
 }
