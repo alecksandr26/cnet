@@ -32,9 +32,9 @@ add_executable(test_layer
   test_layer.cpp
 )
 
-# add_executable(test_ann
-#   test_ann.cpp
-# )
+add_executable(test_model
+  test_model.cpp
+)
 
 # Link the library
 target_link_libraries(test_mat
@@ -55,18 +55,17 @@ target_link_libraries(test_layer
   GTest::gtest_main
 )
 
-# target_link_libraries(test_ann
-#   PRIVATE
-#   ${CMAKE_PROJECT_NAME}
-#   GTest::gtest_main
-# )
+target_link_libraries(test_model
+  PRIVATE
+  ${CMAKE_PROJECT_NAME}
+  GTest::gtest_main
+)
 
 include(GoogleTest)
 gtest_discover_tests(test_mat)
 gtest_discover_tests(test_afunc)
 gtest_discover_tests(test_layer)
-
-# gtest_discover_tests(test_ann)
+gtest_discover_tests(test_model)
 
 # include(CTest)
 

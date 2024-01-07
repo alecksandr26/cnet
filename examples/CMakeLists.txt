@@ -4,7 +4,15 @@ add_executable(bench_my_lib
   bench_my_lib.cpp
 )
 
+add_executable(example_layer
+  example_layer.cpp
+)
+
 target_link_libraries(bench_my_lib
+  PRIVATE ${CMAKE_PROJECT_NAME}
+)
+
+target_link_libraries(example_layer
   PRIVATE ${CMAKE_PROJECT_NAME}
 )
 

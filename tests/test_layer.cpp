@@ -6,7 +6,6 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <chrono>
-#include <memory>
 
 #include "cnet/layer.hpp"
 #include "cnet/cost.hpp"
@@ -16,8 +15,8 @@ using namespace cnet::layer;
 
 TEST(LayerTest, TestFeedForwardSigmoidOne)
 {
-	dense<double> L(4, std::make_unique<afunc::sigmoid<double>>());
-
+	dense<double> L(4, "sigmoid");
+	
 	// Build the layer
 	L.build(4, 1.0);
 	
@@ -28,6 +27,7 @@ TEST(LayerTest, TestFeedForwardSigmoidOne)
 		{5}
 	};
 
+	// Feedforward process
 	mat<double> A = L(X);
 	
 	for (std::size_t i = 0; i < A.get_rows(); i++)
@@ -38,7 +38,7 @@ TEST(LayerTest, TestFeedForwardSigmoidOne)
 TEST(LayerTest, TestFeedForwardSigmoidZero)
 {
 	
-	dense<double> L(4, std::make_unique<afunc::sigmoid<double>>());
+	dense<double> L(4, "sigmoid");
 	
 	// Dont use bias
 	L.set_use_bias(false);
@@ -62,7 +62,7 @@ TEST(LayerTest, TestFeedForwardSigmoidZero)
 
 TEST(LayerTest, TestFeedForwardReLUPositive)
 {
-	dense<double> L(4, std::make_unique<afunc::relu<double>>());
+	dense<double> L(4, "relu");
     
 	L.build(4, 1.0);
 
@@ -83,12 +83,12 @@ TEST(LayerTest, TestFeedForwardReLUPositive)
 
 TEST(LayerTest, TestFeedForwardReLUNegative)
 {
-	dense<double> L(4, std::make_unique<afunc::relu<double>>());
+	dense<double> L(4, "relu");
 
 	// Dont use bias
 	L.set_use_bias(false);
 	L.build(4, -1.0);
-
+	
 	mat<double> X = {
 		{0},
 		{1},
@@ -104,15 +104,13 @@ TEST(LayerTest, TestFeedForwardReLUNegative)
 			EXPECT_NEAR(A(i, j), 0.0, 1e-3);
 }
 
-
-
 TEST(LayerTest, TestFitLayerAnd)
 {
 	constexpr std::size_t epochs = 32;
 	constexpr double lr = 100.0;
 	
 	// Train a perceptron of and
-	dense<double> p_and(1, std::make_unique<afunc::sigmoid<double>>());
+	dense<double> p_and(1, "sigmoid");
 
 	p_and.build(2, 0.0);
 
@@ -225,7 +223,7 @@ TEST(LayerTest, TestFitBigLayer) {
 	constexpr std::size_t epochs = 32;
 	constexpr double lr = 100.0;
 	
-	dense<double> p_big(5, std::make_unique<afunc::sigmoid<double>>());
+	dense<double> p_big(5, "sigmoid");
 	
 	p_big.build(2, 0.0);
 	
@@ -306,4 +304,21 @@ TEST(LayerTest, TestFitBigLayer) {
 }
 
 
+TEST(LayerTest, TestInputLayer)
+{
+	input<double> in(4);
+	
+	mat<double> X = {
+		{0},
+		{1},
+		{2.5},
+		{5}
+	};
+	
+	mat<double> Y = in(X);
+	
+	for (std::size_t i = 0; i < X.get_rows(); i++)
+		for (std::size_t j = 0; j < X.get_cols(); j++)
+			ASSERT_EQ(X(i, j), Y(i, j));
+}
 

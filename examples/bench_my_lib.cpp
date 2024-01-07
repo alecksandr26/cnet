@@ -109,7 +109,7 @@ int main(void)
 	
 	// std::cout << sigmoid(C) << std::endl;
 
-	dense<double> L(4, std::make_unique<sigmoid<double>>());
+	dense<double> L(4, "sigmoid");
 	
 	// L.set_use_bias(false);
 	L.build(4, 1.0);

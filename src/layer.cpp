@@ -5,9 +5,50 @@
 #include <memory>
 #include <complex>
 #include <cstddef>
+#include <unordered_map>
+#include <functional>
+#include <utility>
+#include <cassert>
 
 #include <immintrin.h> // For AVX2 intrinsics
 #include <omp.h>
+
+#define DEFAULT_AMOUNT_OF_BATCHES 4
+
+// This is super shitty we need to improve this thing
+template<typename T=double>
+static std::unique_ptr<cnet::afunc::afunc<T>> create_afunc(const std::string &name)
+{
+	static const std::unordered_map<std::string,
+					std::function<std::unique_ptr<cnet::afunc::afunc<T>>()>> afunc_map = {
+		{
+			"linear",
+			[]() {
+				return std::make_unique<cnet::afunc::linear<T>>();
+			}
+		},
+		{
+			"sigmoid",
+			[]() {
+				return std::make_unique<cnet::afunc::sigmoid<T>>();
+			}
+		},
+		{
+			"relu",
+			[]() {
+				return std::make_unique<cnet::afunc::relu<T>>();
+			}
+		},
+	};
+
+	auto it = afunc_map.find(name);
+	if (it == afunc_map.end()) {
+		// Handle unknown activation function type
+		throw std::runtime_error("Unknown activation function: " + name);
+	}
+	
+	return it->second();
+}
 
 template<class T>
 cnet::layer::dense<T>::dense(std::size_t units)
@@ -15,18 +56,17 @@ cnet::layer::dense<T>::dense(std::size_t units)
 	units_   = units;
 	func_ = std::make_unique<cnet::afunc::linear<T>>();
 	in_ = 0;
-	built_ = false;
+	cnet::layer::layer<T>::built_ = false;
 	use_bias_ = true;
 }
 
-
 template<class T>
-cnet::layer::dense<T>::dense(std::size_t units, std::unique_ptr<afunc::afunc<T>> &&func)
+cnet::layer::dense<T>::dense(std::size_t units, const std::string &afunc_name)
 {
 	units_   = units;
-	func_ = std::move(func);
+	func_ = create_afunc(afunc_name);
 	in_ = 0;
-	built_ = false;
+	cnet::layer::layer<T>::built_ = false;
 	use_bias_ = true;
 }
 
@@ -35,7 +75,7 @@ cnet::layer::dense<T>::dense(void)
 {
 	units_ = in_ = 0;
 	func_ = NULL;
-	built_ = false;
+	cnet::layer::layer<T>::built_ = false;
 	use_bias_ = true;
 }
 
@@ -43,7 +83,7 @@ template<class T>
 cnet::layer::dense<T>::~dense(void)
 {
 	units_ = in_ = 0;
-	built_ = false;
+	cnet::layer::layer<T>::built_ = false;
 	func_ = NULL;
 }
 
@@ -64,7 +104,7 @@ void cnet::layer::dense<T>::build(std::size_t in_size)
 	if (use_bias_)
 		B_.rand(0.0, 1.0);
 	
-	built_ = true;
+	cnet::layer::layer<T>::built_ = true;
 }
 
 template<class T>
@@ -77,7 +117,7 @@ void cnet::layer::dense<T>::build(std::size_t in_size, T init_val)
 	W_.resize(units_, in_, init_val);
 	if (use_bias_)
 		B_.resize(units_, 1, init_val);
-	built_ = true;
+	cnet::layer::layer<T>::built_ = true;
 }
 
 template<class T>
@@ -93,7 +133,7 @@ template<class T>
 cnet::mat<T> cnet::layer::dense<T>::operator()(const cnet::mat<T> &X)
 {
 	// Build the layer
-	if (!built_)
+	if (!cnet::layer::layer<T>::built_)
 		build(X.get_rows());
 	
 	if (X.get_cols() != 1 || X.get_rows() != W_.get_cols())
@@ -234,6 +274,12 @@ std::size_t cnet::layer::dense<T>::get_units(void) const
 }
 
 template<class T>
+std::size_t cnet::layer::dense<T>::get_out_size(void) const
+{
+	return units_;
+}
+
+template<class T>
 std::size_t cnet::layer::dense<T>::get_in_size(void) const
 {
 	return in_;
@@ -246,18 +292,31 @@ std::size_t cnet::layer::dense<T>::get_use_bias(void) const
 }
 
 template<class T>
+cnet::mat<T> cnet::layer::dense<T>::get_weights(void) const
+{
+	return W_;
+}
+
+template<class T>
+cnet::mat<T> cnet::layer::dense<T>::get_biases(void) const
+{
+	return B_;
+}
+
+
+template<class T>
 void cnet::layer::dense<T>::set_units(std::size_t units)
 {
 	units_ = units;
 	
 	// Needs to rebuild the layer
-	built_ = false;
+	cnet::layer::layer<T>::built_ = false;
 }
 
 template<class T>
-void cnet::layer::dense<T>::set_afunc(std::unique_ptr<cnet::afunc::afunc<T>> &&func)
+void cnet::layer::dense<T>::set_afunc(const std::string &afunc_name)
 {
-	func_ = std::move(func);
+	func_ = create_afunc(afunc_name);
 }
 
 template<class T>
@@ -266,5 +325,116 @@ void cnet::layer::dense<T>::set_use_bias(bool use_bias)
 	use_bias_ = use_bias;
 }
 
+
+
+template<class T>
+cnet::layer::input<T>::input(void)
+{
+	cnet::layer::layer<T>::built_ = false;
+	batches_ = out_ = in_shape_.second = in_shape_.first = 0;
+	A_ = NULL;
+}
+
+template<class T>
+cnet::layer::input<T>::~input(void)
+{
+	if (A_)
+		delete A_;
+}
+
+
+template<class T>
+cnet::layer::input<T>::input(std::size_t in_size)
+{
+	cnet::layer::layer<T>::built_ = false;
+	out_ = in_shape_.first = in_size; // Rows
+	in_shape_.second = 1;	    // Cols
+	batches_ = DEFAULT_AMOUNT_OF_BATCHES;
+	A_ = NULL;
+}
+
+template<class T>
+cnet::layer::input<T>::input(std::size_t in_size, std::size_t batches)
+{
+	cnet::layer::layer<T>::built_ = false;
+	out_ = in_shape_.first = in_size; // Rows
+	in_shape_.second = 1;	    // Cols
+	batches_ = batches;
+	A_ = NULL;
+
+	assert(0 && "Not implemented yet");
+}
+
+template<class T>
+cnet::layer::input<T>::input(std::pair<std::size_t, std::size_t> in_shape)
+{
+	cnet::layer::layer<T>::built_ = false;
+	in_shape_.first = in_shape.first;            // Rows
+	in_shape_.second = in_shape.second;	    // Cols
+	batches_ = DEFAULT_AMOUNT_OF_BATCHES;
+
+	out_ = in_shape_.first * in_shape_.second;
+	A_ = NULL;
+	
+	assert(0 && "Not implemented yet");
+}
+
+template<class T>
+cnet::layer::input<T>::input(std::pair<std::size_t, std::size_t> in_shape, std::size_t batches)
+{
+	cnet::layer::layer<T>::built_ = false;
+	in_shape_.first = in_shape.first;            // Rows
+	in_shape_.second = in_shape.second;	    // Cols
+	batches_ = batches;
+
+	out_ = in_shape_.first * in_shape_.second;
+	A_ = NULL;
+
+	assert(0 && "Not implemented yet");
+}
+
+template<class T>
+cnet::mat<T> cnet::layer::input<T>::operator()(const cnet::mat<T> &X)
+{
+	// Here it will transform the input to a one dimension output
+	// For the moment just run like this
+	
+	return X;
+}
+
+template<class T>
+void cnet::layer::input<T>::build(void)
+{
+	if (out_ == 0)
+		throw std::invalid_argument("invalid layer: Layer is not initlized");
+
+	// Alloc the matrices by the batch size
+	
+	cnet::layer::layer<T>::built_ = true;
+	
+}
+
+template<class T>
+std::size_t cnet::layer::input<T>::get_out_size(void) const
+{
+	return out_;
+}
+
+template<class T>
+std::size_t cnet::layer::input<T>::get_in_size(void) const
+{
+	return in_shape_.first * in_shape_.second;;
+}
+
+template<class T>
+std::pair<std::size_t, std::size_t> cnet::layer::input<T>::get_in_shape(void) const
+{
+	return in_shape_;
+}
+
 template class cnet::layer::layer<double>;
+template class cnet::layer::trainable_layer<double>;
+template class cnet::layer::nontrainable_layer<double>;
 template class cnet::layer::dense<double>;
+template class cnet::layer::input<double>;
+template static std::unique_ptr<cnet::afunc::afunc<double>> create_afunc(const std::string &name);
