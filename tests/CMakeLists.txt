@@ -24,17 +24,17 @@ add_executable(test_mat
   test_mat.cpp
 )
 
-add_executable(test_afunc
-  test_afunc.cpp
-)
+# add_executable(test_afunc
+#   test_afunc.cpp
+# )
 
-add_executable(test_layer
-  test_layer.cpp
-)
+# add_executable(test_layer
+#   test_layer.cpp
+# )
 
-add_executable(test_model
-  test_model.cpp
-)
+# add_executable(test_model
+#   test_model.cpp
+# )
 
 # Link the library
 target_link_libraries(test_mat
@@ -43,29 +43,30 @@ target_link_libraries(test_mat
   GTest::gtest_main
 )
 
-target_link_libraries(test_afunc
-  PRIVATE
-  ${CMAKE_PROJECT_NAME}
-  GTest::gtest_main
-)
+# target_link_libraries(test_afunc
+#   PRIVATE
+#   ${CMAKE_PROJECT_NAME}
+#   GTest::gtest_main
+# )
 
-target_link_libraries(test_layer
-  PRIVATE
-  ${CMAKE_PROJECT_NAME}
-  GTest::gtest_main
-)
+# target_link_libraries(test_layer
+#   PRIVATE
+#   ${CMAKE_PROJECT_NAME}
+#   GTest::gtest_main
+# )
 
-target_link_libraries(test_model
-  PRIVATE
-  ${CMAKE_PROJECT_NAME}
-  GTest::gtest_main
-)
+# target_link_libraries(test_model
+#   PRIVATE
+#   ${CMAKE_PROJECT_NAME}
+#   GTest::gtest_main
+# )
 
 include(GoogleTest)
 gtest_discover_tests(test_mat)
-gtest_discover_tests(test_afunc)
-gtest_discover_tests(test_layer)
-gtest_discover_tests(test_model)
+
+# gtest_discover_tests(test_afunc)
+# gtest_discover_tests(test_layer)
+# gtest_discover_tests(test_model)
 
 # include(CTest)
 

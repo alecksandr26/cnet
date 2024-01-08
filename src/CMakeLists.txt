@@ -1,12 +1,14 @@
 project(${CMAKE_PROJECT_NAME})
 
-file(GLOB SOURCES
-  ${SRC_DIR}/*.cpp
-)
+# file(GLOB SOURCES
+#   ${SRC_DIR}/*.cpp
+# )
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
-  ${SOURCES}  
+  utils_mat.cpp strassen.cpp mat.cpp
 )
+
+# mat.cpp afunc.cpp cost.cpp layer.cpp
 
 # Try to compile to suppoert AVX512F
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -mavx -march=native)

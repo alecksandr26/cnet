@@ -18,30 +18,30 @@ namespace cnet {
 		template<class T>
 		class afunc {
 		public:
-			virtual mat<T> operator()(const mat<T> &X) const = 0;
-			virtual mat<T> derivate(const mat<T> &X) const  = 0;
+			virtual Mat<T> operator()(const Mat<T> &X) const = 0;
+			virtual Mat<T> derivate(const Mat<T> &X) const  = 0;
 		};
 
 		template<class T>
 		class linear : public afunc<T> {
 		public:
-			mat<T> operator()(const mat<T> &X) const override;
-			mat<T> derivate(const mat<T> &X) const override;
+			Mat<T> operator()(const Mat<T> &X) const override;
+			Mat<T> derivate(const Mat<T> &X) const override;
 		};
 		
 		template<class T>
 		class sigmoid : public afunc<T> {
 		public:
-			mat<T> operator()(const mat<T> &X) const override;
-			mat<T> derivate(const mat<T> &X) const override;
+			Mat<T> operator()(const Mat<T> &X) const override;
+			Mat<T> derivate(const Mat<T> &X) const override;
 		};
 
 
 		template<class T>
 		class relu : public afunc<T> {
 		public:
-			mat<T> operator()(const mat<T> &X) const override;
-			mat<T> derivate(const mat<T> &X) const override;
+			Mat<T> operator()(const Mat<T> &X) const override;
+			Mat<T> derivate(const Mat<T> &X) const override;
 		};
 	}
 }

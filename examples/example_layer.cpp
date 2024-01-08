@@ -7,9 +7,9 @@ using namespace cnet::layer;
 
 int main(void)
 {
-	dense<double> L(1, "sigmoid");
+	// dense<double> L(1, "sigmoid");
 
-	L.build(2);
+	// L.build(2);
 }
 
 

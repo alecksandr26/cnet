@@ -19,39 +19,43 @@
 
 namespace cnet {
 	namespace layer {
-		template<class T>
+		enum LAYER_DTYPE {
+			// dfloat32 = 0,
+			dfloat64, // Just for the moment
+			// Not complex yet
+		};
+		
 		class layer {
 		public:
 			bool trainable;
 			
-			virtual mat<T> operator()(const mat<T> &X) = 0; // Feedforward function
+			virtual Mat<double> operator()(const Mat<double> &X) = 0; // Feedforward function
+			// virtual Mat<float> operator()(const Mat<float> &X) = 0;
 			virtual std::size_t get_in_size(void) const = 0;
 			virtual std::size_t get_out_size(void) const = 0;
 			
 		protected:
 			bool built_;
+			enum LAYER_DTYPE dtype;
 		};
 
-
-		template<class T>
-		class trainable_layer : public layer<T> {
+		class trainable_layer : public layer {
 		public:
 			trainable_layer(void)
 			{
-				layer<T>::trainable = true;
+				layer::trainable = true;
 			}
 			
 			virtual void build(std::size_t in_size) = 0;
-			virtual void build(std::size_t in_size, T init_val) = 0;
+			virtual void build(std::size_t in_size, double init_val) = 0;
+			// virtual void build(std::size_t in_size, double init_val) = 0;
 		};
 
-
-		template<class T>
-		class nontrainable_layer : public layer<T> {
+		class nontrainable_layer : public layer {
 		public:
 			nontrainable_layer(void)
 			{
-				layer<T>::trainable = false;
+				layer::trainable = false;
 			}
 			
 			virtual void build(void) = 0;
@@ -59,8 +63,7 @@ namespace cnet {
 		
 
 		// The input layer will flat the input to pass to a normal dense feedforward layer
-		template<class T>
-		class input : public nontrainable_layer<T> {
+		class input : public nontrainable_layer {
 		public:
 			input(void);
 			input(std::size_t in_size); // Flattern input
@@ -76,8 +79,7 @@ namespace cnet {
 			std::size_t get_out_size(void) const override;
 			std::pair<std::size_t, std::size_t> get_in_shape(void) const;
 			
-			mat<T> operator()(const mat<T> &X) override;
-			// mat<T> operator()(const mat<T> *X);
+			Mat<double> operator()(const Mat<double> &X) override;
 			void build(void) override;
 						
 		private:
@@ -85,16 +87,14 @@ namespace cnet {
 			std::size_t out_, batches_;
 			
 			// If it needs to flat the inputs
-			mat<T> *A_;
+			Mat<double> *A_;
+			// Mat<float> *fA_;
 		};
 		
 		// Dense layer it is a normal NN of the type Y = Act(W * X + B), where X is one dimension
 		// object
-		template<class T>
-		class dense : public trainable_layer<T> {
+		class dense : public trainable_layer {
 		public:
-			static constexpr bool trainable = true;
-
 			// By default it uses the basic linear act function
 			dense(std::size_t units);
 			dense(std::size_t units, const std::string &afunc_name);
@@ -102,27 +102,26 @@ namespace cnet {
 			dense(void);
 			~dense(void);
 			void build(std::size_t in_size) override;
-			void build(std::size_t in_size, T init_val) override;
+			void build(std::size_t in_size, double init_val) override;
 			
 			// TODO: Let the user to chose its own randomizer function
-			void rand_range(T a, T b);
+			void rand_range(double a, double b);
 
-			// It will
-			mat<T> operator()(const mat<T> &X) override; // Feedforwar function
-			void fit_backprop(const mat<T> &E, double lr, const mat<T> &A);
+			Mat<double> operator()(const Mat<double> &X) override; // Feedforwar function
+			void fit_backprop(const Mat<double> &E, double lr, const Mat<double> &A);
 			
 			std::size_t get_units(void) const;
 			std::size_t get_in_size(void) const;
 			std::size_t get_out_size(void) const;
 			std::size_t get_use_bias(void) const;
-			cnet::mat<T> get_weights(void) const;
-			cnet::mat<T> get_biases(void) const;
+			cnet::Mat<double> get_weights(void) const;
+			cnet::Mat<double> get_biases(void) const;
 			
 			void set_units(std::size_t units);
 			void set_afunc(const std::string &afunc_name);
 			void set_use_bias(bool use_bias);
 			
-			friend std::ostream &operator<<(std::ostream& os, const dense<T> &l)
+			friend std::ostream &operator<<(std::ostream& os, const dense &l)
 			{
 				os << "W = \n" << l.W_;
 				if (l.use_bias_)
@@ -130,13 +129,12 @@ namespace cnet {
 			
 				return os;
 			}
-
 			
 		private:
 			bool use_bias_;
 			std::size_t in_, units_;
-			std::unique_ptr<cnet::afunc::afunc<T>> func_;
-			mat<T> W_, B_;
+			std::unique_ptr<cnet::afunc::afunc<double>> func_;
+			Mat<double> W_, B_;
 		};
 
 

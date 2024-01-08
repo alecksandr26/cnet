@@ -5,10 +5,13 @@
 - Do the math for complex numbers back prop [ ]
 - Build with complex parameters [ ]
 --- 2024-01-05 ---
-- Refactor the mat component [ ]
+- Refactor the mat component [X]
 - Design an in layer to support input of none one dimension [ ]
-- Build an struct shape and contained in the mat object [ ]
-- Create a better version of the print of the matrix [ ]
+- Build an struct shape and contained in the mat object [X]
+- Create a better version of the print of the matrix [X]
 - Build utilites to build matrices fast from files [ ]
-- Inherit the matrix class to build a simple array class [ ]
-
+- Inherit the matrix class to build a simple array class [], NO
+- Try to do the mat mul by porint the matrices to sparse matrices and
+  see if it is more faster [ ]
+- Try to get that 2.9 of velocity in the mat mul [ ]
+- Build different mat prints [ ]

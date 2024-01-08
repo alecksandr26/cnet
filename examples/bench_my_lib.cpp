@@ -12,31 +12,31 @@ using namespace cnet::afunc;
 
 int main(void)
 {
-	// mat<double> X = {	// 2 allocs
-	// 	{1, 2, 3, 4, 5, 6, 7, 8, 9},
-	// 	{10, 11, 12, 13, 14, 15, 16, 17, 18},
-	// 	{19, 20, 21, 22, 23, 24, 25, 26, 27},
-	// 	{28, 29, 30, 31, 32, 33, 34, 35, 36},
-	// 	{37, 38, 39, 40, 41, 42, 43, 44, 45},
-	// 	{46, 47, 48, 49, 50, 51, 52, 53, 54},
-	// 	{55, 56, 57, 58, 59, 60, 61, 62, 63},
-	// 	{64, 65, 66, 67, 68, 69, 70, 71, 72},
-	// 	{73, 74, 75, 76, 77, 78, 79, 80, 81}
-	// };
+	Mat<float> X = {	// 2 allocs
+		{1, 2, 3, 4, 5, 6, 7, 8, 9},
+		{10, 11, 12, 13, 14, 15, 16, 17, 18},
+		{19, 20, 21, 22, 23, 24, 25, 26, 27},
+		{28, 29, 30, 31, 32, 33, 34, 35, 36},
+		{37, 38, 39, 40, 41, 42, 43, 44, 45},
+		{46, 47, 48, 49, 50, 51, 52, 53, 54},
+		{55, 56, 57, 58, 59, 60, 61, 62, 63},
+		{64, 65, 66, 67, 68, 69, 70, 71, 72},
+		{73, 74, 75, 76, 77, 78, 79, 80, 81}
+	};
 
-	// mat<double> Y = {	//  2 allocs
-	// 	{9, 8, 7, 6, 5, 4, 3, 2, 1},
-	// 	{18, 17, 16, 15, 14, 13, 12, 11, 10},
-	// 	{27, 26, 25, 24, 23, 22, 21, 20, 19},
-	// 	{36, 35, 34, 33, 32, 31, 30, 29, 28},
-	// 	{45, 44, 43, 42, 41, 40, 39, 38, 37},
-	// 	{54, 53, 52, 51, 50, 49, 48, 47, 46},
-	// 	{63, 62, 61, 60, 59, 58, 57, 56, 55},
-	// 	{72, 71, 70, 69, 68, 67, 66, 65, 64},
-	// 	{81, 80, 79, 78, 77, 76, 75, 74, 73}
-	// };
+	Mat<float> Y = {	//  2 allocs
+		{9, 8, 7, 6, 5, 4, 3, 2, 1},
+		{18, 17, 16, 15, 14, 13, 12, 11, 10},
+		{27, 26, 25, 24, 23, 22, 21, 20, 19},
+		{36, 35, 34, 33, 32, 31, 30, 29, 28},
+		{45, 44, 43, 42, 41, 40, 39, 38, 37},
+		{54, 53, 52, 51, 50, 49, 48, 47, 46},
+		{63, 62, 61, 60, 59, 58, 57, 56, 55},
+		{72, 71, 70, 69, 68, 67, 66, 65, 64},
+		{81, 80, 79, 78, 77, 76, 75, 74, 73}
+	};
 
-	// Results in mat mul
+	// Results in Mat mul
 	// (2565 | 2520 | 2475 | 2430 | 2385 | 2340 | 2295 | 2250 | 2205
 	// 6210 | 6084 | 5958 | 5832 | 5706 | 5580 | 5454 | 5328 | 5202
 	// 9855 | 9648 | 9441 | 9234 | 9027 | 8820 | 8613 | 8406 | 8199
@@ -47,7 +47,7 @@ int main(void)
 	// 28080 | 27468 | 26856 | 26244 | 25632 | 25020 | 24408 | 23796 | 23184
 	// 31725 | 31032 | 30339 | 29646 | 28953 | 28260 | 27567 | 26874 | 26181)
 	
-	// mat<double> X = {
+	// Mat<float> X = {
 	// 	{1, 2, 3, 4},
 	// 	{5, 6, 7, 8},
 	// 	{9, 10, 11, 12},
@@ -55,7 +55,7 @@ int main(void)
 	// };
 
 
-	// mat<double> Y = {
+	// Mat<float> Y = {
 	// 	{17, 18, 19, 20},
 	// 	{21, 22, 23, 24},
 	// 	{25, 26, 27, 28},
@@ -67,32 +67,32 @@ int main(void)
 	// |986.00000 1028.00000 1070.00000 1112.00000|
         // |1354.00000 1412.00000 1470.00000 1528.00000|
 	
-	mat<double> X = {
-		{1, 2},
-		{3, 4}
-	};
-
-	mat<double> Y = {
-		{1, 2},
-		{3, 4}
-	};
+	// Mat<float> X = {
+	// 	{1, 2},
+	// 	{3, 4}
+	// };
+	
+	// Mat<float> Y = {
+	// 	{1, 2},
+	// 	{3, 4}
+	// };
 
 	// [[7.000000	10.000000]
 	//  [15.000000	22.000000]]
 
-
-	// mat<double> X = {
+	
+	// Mat<double> X = {
 	// 	{1}
 	// };
 
-	// mat<double> Y = {
+	// Mat<double> Y = {
 	// 	{2}
 	// };
 
 	// [[2]]
 	
 	// 1 alloc
-	mat<double> C;
+	Mat<float> C;
 	
 	// for (std::size_t i = 0; i < 10; i++)
 	
@@ -105,25 +105,25 @@ int main(void)
 	// |750.00000 792.00000 834.00000|
 
 	// valgrind --leak-check=full
-	// std::cout << C << std::endl;
+	std::cout << C << std::endl;
 	
 	// std::cout << sigmoid(C) << std::endl;
 
-	dense<double> L(4, "sigmoid");
+	// dense<double> L(4, "sigmoid");
 	
-	// L.set_use_bias(false);
-	L.build(4, 1.0);
+	// // L.set_use_bias(false);
+	// L.build(4, 1.0);
 	
-	std::cout << L << std::endl;
+	// std::cout << L << std::endl;
 	
-	mat<double> X_IN = {
-		{0},
-		{1},
-		{2.5},
-		{5}
-	};
+	// Mat<double> X_IN = {
+	// 	{0},
+	// 	{1},
+	// 	{2.5},
+	// 	{5}
+	// };
 	
-	std::cout << L(X_IN) << std::endl;
+	// std::cout << L(X_IN) << std::endl;
 	
 	// https:en.algorithmica.org/hpc/external-memory/oblivious/#algorithm
 
@@ -195,8 +195,8 @@ int main(void)
 	// --------------------- here ----------------------------
 	static constexpr int size_mat = 1000;
 	
-	mat<double> A(size_mat, size_mat);
-	mat<double> B(size_mat, size_mat);
+	Mat<double> A(size_mat, size_mat);
+	Mat<double> B(size_mat, size_mat);
 	
 	// Assing random values
 	A.rand(0.0, 1.0);
@@ -204,7 +204,7 @@ int main(void)
 	
 	auto beg = std::chrono::high_resolution_clock::now();
 	
-	mat<double> R;
+	Mat<double> R;
 	// for (std::size_t i = 0; i < 10; i++)
 	R = A * B;
 	
@@ -218,75 +218,75 @@ int main(void)
 		  << seconds << " seconds" << std::endl;
 
 
-	// Perfom the addition
+	// // // Perfom the addition
 
-	// N = 1000
-	// Normal version Mat add Elapsed Time: 0.117499 seconds
-	// The vectorized version Mat add Elapsed Time: 0.021676 seconds
-	// The new version almost the finall version Mat add Elapsed Time: 0.006490 seconds
+	// // N = 1000
+	// // Normal version Mat add Elapsed Time: 0.117499 seconds
+	// // The vectorized version Mat add Elapsed Time: 0.021676 seconds
+	// // The new version almost the finall version Mat add Elapsed Time: 0.006490 seconds
 	
-	beg = std::chrono::high_resolution_clock::now();
+	// beg = std::chrono::high_resolution_clock::now();
 	
-	mat<double> R1;
-	// for (std::size_t i = 0; i < 10; i++)
-	R1 = A + B;
+	// Mat<float> R1;
+	// // for (std::size_t i = 0; i < 10; i++)
+	// R1 = A + B;
 	
-	end = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
+	// end = std::chrono::high_resolution_clock::now();
+	// duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 	
-	// Convert microseconds to seconds
-	seconds = duration.count() / 1e6;
+	// // Convert microseconds to seconds
+	// seconds = duration.count() / 1e6;
 	
-	std::cout << "Mat add Elapsed Time: " << std::fixed << std::setprecision(6)
-		  << seconds << " seconds" << std::endl;
+	// std::cout << "Mat add Elapsed Time: " << std::fixed << std::setprecision(6)
+	// 	  << seconds << " seconds" << std::endl;
 
 
-	// Perform the scalar product
-	// The new version almost the finall version Mat scalar product Elapsed Time: 0.001471 seconds
+	// // Perform the scalar product
+	// // The new version almost the finall version Mat scalar product Elapsed Time: 0.001471 seconds
 
-	beg = std::chrono::high_resolution_clock::now();
+	// beg = std::chrono::high_resolution_clock::now();
 	
-	// for (std::size_t i = 0; i < 10; i++)
-	R1 = A * 10.0;
+	// // for (std::size_t i = 0; i < 10; i++)
+	// R1 = A * 10.0;
 	
-	end = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
+	// end = std::chrono::high_resolution_clock::now();
+	// duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 	
-	// Convert microseconds to seconds
-	seconds = duration.count() / 1e6;
+	// // Convert microseconds to seconds
+	// seconds = duration.count() / 1e6;
 	
-	std::cout << "Mat scalar product Elapsed Time: " << std::fixed << std::setprecision(6)
-		  << seconds << " seconds" << std::endl;
+	// std::cout << "Mat scalar product Elapsed Time: " << std::fixed << std::setprecision(6)
+	// 	  << seconds << " seconds" << std::endl;
 
 
 	// Perform the sigmoid function
-	beg = std::chrono::high_resolution_clock::now();
+	// beg = std::chrono::high_resolution_clock::now();
 	
-	// for (std::size_t i = 0; i < 10; i++)
-	R1 = sigmoid<double>()(A);
+	// // for (std::size_t i = 0; i < 10; i++)
+	// R1 = sigmoid<double>()(A);
 	
-	end = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
+	// end = std::chrono::high_resolution_clock::now();
+	// duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 	
-	// Convert microseconds to seconds
-	seconds = duration.count() / 1e6;
+	// // Convert microseconds to seconds
+	// seconds = duration.count() / 1e6;
 	
-	std::cout << "Mat sigmoid func Elapsed Time: " << std::fixed << std::setprecision(6)
-		  << seconds << " seconds" << std::endl;
+	// std::cout << "Mat sigmoid func Elapsed Time: " << std::fixed << std::setprecision(6)
+	// 	  << seconds << " seconds" << std::endl;
 	
-	beg = std::chrono::high_resolution_clock::now();
+	// beg = std::chrono::high_resolution_clock::now();
 	
-	// for (std::size_t i = 0; i < 10; i++)
-	R1 = relu<double>()(A);
+	// // for (std::size_t i = 0; i < 10; i++)
+	// R1 = relu<double>()(A);
 	
-	end = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
+	// end = std::chrono::high_resolution_clock::now();
+	// duration = std::chrono::duration_cast<std::chrono::microseconds>(end - beg);
 	
-	// Convert microseconds to seconds
-	seconds = duration.count() / 1e6;
+	// // Convert microseconds to seconds
+	// seconds = duration.count() / 1e6;
 	
-	std::cout << "Mat relu func Elapsed Time: " << std::fixed << std::setprecision(6)
-		  << seconds << " seconds" << std::endl;
+	// std::cout << "Mat relu func Elapsed Time: " << std::fixed << std::setprecision(6)
+	// 	  << seconds << " seconds" << std::endl;
 	
 	return 0;
 }
