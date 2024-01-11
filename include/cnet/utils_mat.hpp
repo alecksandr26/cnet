@@ -1,9 +1,9 @@
 #ifndef UTILS_MAT_INCLUDED
 #define UTILS_MAT_INCLUDED
 
-#include <cstdint>
+#include <cstddef>
 
-namespace cnet::utils {
+namespace cnet::mathops::utils {
 	extern void *alloc_mem_matrix(std::size_t n, std::size_t item_size);
 	extern void free_mem_matrix(void *ptr);
 	

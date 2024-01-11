@@ -1,3 +1,4 @@
+#include "cnet/dtypes.hpp"
 #include "cnet/mat.hpp"
 #include "cnet/utils_mat.hpp"
 #include "cnet/utils_avx.hpp"
@@ -16,33 +17,34 @@
 #include <immintrin.h>	      // For AVX2 intrinsics
 #include <omp.h>
 
-using namespace cnet;
-using namespace cnet::utils;
-using namespace cnet::strassen;
+using namespace cnet::dtypes;
+using namespace cnet::mathops;
+using namespace utils;
+using namespace strassen;
 using namespace std;
 
-#if 1
-static void print_mat_debug(double *m, std::size_t n)
+#ifndef NDEBUG
+static void print_mat_debug(float64 *m, size_t n)
 {
-	for (std::size_t i = 0; i < n; i++) {
-		for (std::size_t j = 0; j < n; j++)
-			std::cout << m[i * n + j] << " ";
-		std::cout << std::endl;
+	for (size_t i = 0; i < n; i++) {
+		for (size_t j = 0; j < n; j++)
+			cout << m[i * n + j] << " ";
+		cout << endl;
 	}
 }
 
-static void print_mat_debug(float *m, std::size_t n)
+static void print_mat_debug(float32 *m, size_t n)
 {
-	for (std::size_t i = 0; i < n; i++) {
-		for (std::size_t j = 0; j < n; j++)
-			std::cout << m[i * n + j] << " ";
-		std::cout << std::endl;
+	for (size_t i = 0; i < n; i++) {
+		for (size_t j = 0; j < n; j++)
+			cout << m[i * n + j] << " ";
+		cout << endl;
 	}
 }
 #endif
 
-template<class T>
-cnet::Mat<T>::Mat(size_t rows, size_t cols)
+template<Numeric T>
+cnet::mathops::Mat<T>::Mat(size_t rows, size_t cols)
 {
 	if (rows == 0 || cols == 0)
 		throw invalid_argument("invalid argument: invalid shape of matrix");
@@ -52,8 +54,8 @@ cnet::Mat<T>::Mat(size_t rows, size_t cols)
 	mat_ = (T *) alloc_mem_matrix(rows * cols, sizeof(T));
 }
 
-template<class T>
-cnet::Mat<T>::Mat(Shape shape)
+template<Numeric T>
+cnet::mathops::Mat<T>::Mat(Shape shape)
 {
 	if (shape.rows == 0 || shape.cols == 0)
 		throw invalid_argument("invalid argument: invalid shape of matrix");
@@ -63,8 +65,8 @@ cnet::Mat<T>::Mat(Shape shape)
 	mat_ = (T *) alloc_mem_matrix(shape.rows * shape.cols, sizeof(T));
 }
 
-template<class T>
-cnet::Mat<T>::Mat(size_t rows, size_t cols, T init_val)
+template<Numeric T>
+cnet::mathops::Mat<T>::Mat(size_t rows, size_t cols, T init_val)
 {
 	if (rows == 0 || cols == 0)
 		throw invalid_argument("invalid argument: invalid shape of matrix");
@@ -76,8 +78,8 @@ cnet::Mat<T>::Mat(size_t rows, size_t cols, T init_val)
 	init_raw_mat(mat_, rows, cols, init_val);
 }
 
-template<class T>
-cnet::Mat<T>::Mat(Shape shape, T init_val)
+template<Numeric T>
+cnet::mathops::Mat<T>::Mat(Shape shape, T init_val)
 {
 	if (shape.rows == 0 || shape.cols == 0)
 		throw invalid_argument("invalid argument: invalid shape of matrix");
@@ -89,27 +91,43 @@ cnet::Mat<T>::Mat(Shape shape, T init_val)
 	init_raw_mat(mat_, shape.rows, shape.cols, init_val);
 }
 
-template<class T>
-cnet::Mat<T>::Mat(const initializer_list<initializer_list<T>> &m)
+template<Numeric T>
+cnet::mathops::Mat<T>::Mat(const initializer_list<initializer_list<T>> &M)
 {
-	if (m.size() == 0) throw invalid_argument("invalid argument: Empty initializer structure");
+	if (M.size() == 0) throw invalid_argument("invalid argument: Empty initializer structure");
 
-	size_t n = m.begin()->size();
-	for (std::size_t i = 1; i < m.size(); i++)
-		if (n != (m.begin() + i)->size())
+	size_t n = M.begin()->size();
+	for (size_t i = 1; i < M.size(); i++)
+		if (n != (M.begin() + i)->size())
 			throw invalid_argument("invalid argument: Invalid structure of the matrix");
 
 	shape_.cols = n;
-	shape_.rows = m.size();
+	shape_.rows = M.size();
 	mat_ = (T *) alloc_mem_matrix(shape_.rows * shape_.cols, sizeof(T));
 	
-	for (std::size_t i = 0; i < shape_.rows; i++)
-		for (std::size_t j = 0; j < shape_.cols; j++)
-			mat_[i * n + j] = *((m.begin() + i)->begin() + j);
+	for (size_t i = 0; i < shape_.rows; i++)
+		for (size_t j = 0; j < shape_.cols; j++)
+			mat_[i * n + j] = *((M.begin() + i)->begin() + j);
 }
 
-template<class T>
-cnet::Mat<T>::Mat(const cnet::Mat<T> &M)
+// It doens't compile 
+// template<Numeric T>
+// cnet::mathops::Mat<T>::Mat(const initializer_list<T> &M)
+// {
+// 	if (M.size() == 0) throw invalid_argument("invalid argument: Empty initializer structure");
+
+// 	size_t n = M.size();
+	
+// 	shape_.cols = n;
+// 	shape_.rows = 1;
+// 	mat_ = (T *) alloc_mem_matrix(shape_.rows * shape_.cols, sizeof(T));
+	
+// 	for (size_t i = 0; i < shape_.cols; i++)
+// 		mat_[i] = *(M.begin() + i);
+// }
+
+template<Numeric T>
+cnet::mathops::Mat<T>::Mat(const Mat<T> &M)
 {
 	T *allocated_mat = M.get_allocated_mat();
 	
@@ -121,15 +139,30 @@ cnet::Mat<T>::Mat(const cnet::Mat<T> &M)
 		   shape_.cols, shape_.cols, shape_.cols);
 }
 
-template<class T>
-cnet::Mat<T>::Mat(void)
+template<Numeric T>
+void cnet::mathops::Mat<T>::operator()(const Mat<T> &M)
+{
+	if (mat_) free_mem_matrix((void *) mat_);
+
+	T *allocated_mat = M.get_allocated_mat();
+	
+	shape_.cols = M.get_cols();
+	shape_.rows = M.get_rows();
+	mat_ = (T *) alloc_mem_matrix(shape_.rows * shape_.cols, sizeof(T));
+	
+	cp_raw_mat(mat_, allocated_mat, shape_.rows,
+		   shape_.cols, shape_.cols, shape_.cols);
+}
+
+template<Numeric T>
+cnet::mathops::Mat<T>::Mat(void)
 {
 	shape_.cols = shape_.rows   = 0;
 	mat_	      = NULL;
 }
 
-template<class T>
-cnet::Mat<T>::~Mat(void)
+template<Numeric T>
+cnet::mathops::Mat<T>::~Mat(void)
 {
 	if (mat_) free_mem_matrix((void *) mat_);
 
@@ -137,8 +170,8 @@ cnet::Mat<T>::~Mat(void)
 	shape_.cols = shape_.rows   = 0;
 }
 
-template<class T>
-Mat<T> &cnet::Mat<T>::resize(size_t rows, size_t cols)
+template<Numeric T>
+Mat<T> &cnet::mathops::Mat<T>::resize(size_t rows, size_t cols)
 {
 	if (rows == 0 || cols == 0)
 		throw invalid_argument("invalid argument: invalid shape of matrix");
@@ -152,8 +185,8 @@ Mat<T> &cnet::Mat<T>::resize(size_t rows, size_t cols)
 	return *this;
 }
 
-template<class T>
-Mat<T> &cnet::Mat<T>::resize(size_t rows, size_t cols, T init_val)
+template<Numeric T>
+Mat<T> &cnet::mathops::Mat<T>::resize(size_t rows, size_t cols, T init_val)
 {
 	resize(rows, cols);
 	init_raw_mat(mat_, rows, cols, init_val);
@@ -161,8 +194,8 @@ Mat<T> &cnet::Mat<T>::resize(size_t rows, size_t cols, T init_val)
 }
 
 
-template<class T>
-Mat<T> &cnet::Mat<T>::resize(Shape shape)
+template<Numeric T>
+Mat<T> &cnet::mathops::Mat<T>::resize(Shape shape)
 {
 	if (shape.rows == 0 || shape.cols == 0)
 		throw invalid_argument("invalid argument: invalid shape of matrix");
@@ -175,35 +208,35 @@ Mat<T> &cnet::Mat<T>::resize(Shape shape)
 	return *this;
 }
 
-template<class T>
-Mat<T> &cnet::Mat<T>::resize(Shape shape, T init_val)
+template<Numeric T>
+Mat<T> &cnet::mathops::Mat<T>::resize(Shape shape, T init_val)
 {
 	resize(shape);
 	init_raw_mat(mat_, shape.rows, shape.cols, init_val);
 	return *this;
 }
 
-template<class T>
-size_t cnet::Mat<T>::get_rows(void) const
+template<Numeric T>
+size_t cnet::mathops::Mat<T>::get_rows(void) const
 {
 	return shape_.rows;
 }
 
-template<class T>
-size_t cnet::Mat<T>::get_cols(void) const
+template<Numeric T>
+size_t cnet::mathops::Mat<T>::get_cols(void) const
 {
 	return shape_.cols;
 }
 
-template<class T>
-Shape cnet::Mat<T>::get_shape(void) const
+template<Numeric T>
+Shape cnet::mathops::Mat<T>::get_shape(void) const
 {
 	return shape_;
 }
 
 // TODO: Optimize this thin
-template<class T>
-Mat<T> cnet::Mat<T>::transpose(void) const
+template<Numeric T>
+Mat<T> cnet::mathops::Mat<T>::transpose(void) const
 {
 	Mat<T> R(shape_);
 
@@ -214,13 +247,13 @@ Mat<T> cnet::Mat<T>::transpose(void) const
 	return R;
 }
 
-template<class T>
-Mat<T> &cnet::Mat<T>::transpose_(void)
+template<Numeric T>
+Mat<T> &cnet::mathops::Mat<T>::transpose_(void)
 {
 	T *allocated_mat = (T *) alloc_mem_matrix(shape_.rows * shape_.cols, sizeof(T));
 
-	for (std::size_t i = 0; i < shape_.rows; i++)
-		for (std::size_t j = 0; j < shape_.cols; j++)
+	for (size_t i = 0; i < shape_.rows; i++)
+		for (size_t j = 0; j < shape_.cols; j++)
 			allocated_mat[j * shape_.rows + i] = mat_[i * shape_.cols + j];
 
 	// Swap the shape
@@ -231,35 +264,35 @@ Mat<T> &cnet::Mat<T>::transpose_(void)
 	return *this;
 }
 
-template<class T>
-T *cnet::Mat<T>::get_allocated_mat(void) const
+template<Numeric T>
+T *cnet::mathops::Mat<T>::get_allocated_mat(void) const
 {
 	if (mat_ == NULL)
 		throw runtime_error("uninitialized Mat: Matrix is uninitialized");
 	return mat_;
 }
 
-template<class T>
-T &cnet::Mat<T>::operator()(size_t i, size_t j) const
+template<Numeric T>
+T &cnet::mathops::Mat<T>::operator()(size_t i, size_t j) const
 {
 	if (i >= shape_.rows || j >= shape_.cols)
 		throw out_of_range("out of range: Matrix subscript out of bounds");
 	return mat_[i * shape_.cols + j];
 }
 
-template<class T>
-T &cnet::Mat<T>::operator[](size_t i) const
+template<Numeric T>
+T &cnet::mathops::Mat<T>::operator[](size_t i) const
 {
-	if (i >= shape_.rows)
-		throw out_of_range("out of range: Matrix subscript out of bounds");
-	if (1 == shape_.cols)
+	if (i >= shape_.cols)
+		throw out_of_range("out of range: Matrix as array subscript out of bounds");
+	if (1 < shape_.rows)
 		throw runtime_error("invalid shape of array: Matrix doesn't have a shape of array (n , 0)");
 	
 	return mat_[i];
 }
 
-template<class T>
-Mat<T> cnet::Mat<T>::operator+(const Mat<T> &B) const
+template<Numeric T>
+Mat<T> cnet::mathops::Mat<T>::operator+(const Mat<T> &B) const
 {
 	if (shape_.cols != B.get_cols() || shape_.rows != B.get_rows())
 		throw invalid_argument("invalid argument: Matrices have different sizes");
@@ -277,8 +310,8 @@ Mat<T> cnet::Mat<T>::operator+(const Mat<T> &B) const
 	return C;
 }
 
-template<class T>
-void cnet::Mat<T>::operator+=(const Mat<T> &B)
+template<Numeric T>
+void cnet::mathops::Mat<T>::operator+=(const Mat<T> &B)
 {
 	if (shape_.cols != B.get_cols() || shape_.rows != B.get_rows())
 		throw invalid_argument("invalid argument: Matrices have different sizes");
@@ -287,8 +320,8 @@ void cnet::Mat<T>::operator+=(const Mat<T> &B)
 	add_raw_mat(mat_, b_allocated_mat, shape_.rows, shape_.cols);
 }
 
-template<class T>
-Mat<T> cnet::Mat<T>::operator-(const Mat<T> &B) const
+template<Numeric T>
+Mat<T> cnet::mathops::Mat<T>::operator-(const Mat<T> &B) const
 {
 	if (shape_.cols != B.get_cols() || shape_.rows != B.get_rows())
 		throw invalid_argument("invalid argument: Matrices have different sizes");
@@ -306,8 +339,8 @@ Mat<T> cnet::Mat<T>::operator-(const Mat<T> &B) const
 	return C;
 }
 
-template<class T>
-void cnet::Mat<T>::operator-=(const Mat<T> &B)
+template<Numeric T>
+void cnet::mathops::Mat<T>::operator-=(const Mat<T> &B)
 {
 	if (shape_.cols != B.get_cols() || shape_.rows != B.get_rows())
 		throw std::invalid_argument("invalid argument: Matrices have different sizes");
@@ -317,8 +350,8 @@ void cnet::Mat<T>::operator-=(const Mat<T> &B)
 }
 
 // This function needs to support complex variables
-template<class T>
-Mat<T> cnet::Mat<T>::operator*(const Mat<T> &B) const
+template<Numeric T>
+Mat<T> cnet::mathops::Mat<T>::operator*(const Mat<T> &B) const
 {
 	if (shape_.cols != B.get_rows())
 		throw invalid_argument("invalid argument: Matrices have different sizes");
@@ -353,8 +386,8 @@ Mat<T> cnet::Mat<T>::operator*(const Mat<T> &B) const
 }
 
 // This function needs to support complex variables
-template<class T>
-void cnet::Mat<T>::operator*=(const Mat<T> &B)
+template<Numeric T>
+void cnet::mathops::Mat<T>::operator*=(const Mat<T> &B)
 {
 	if (shape_.cols != B.get_rows())
 		throw invalid_argument("invalid argument: Matrices have different sizes");
@@ -385,8 +418,8 @@ void cnet::Mat<T>::operator*=(const Mat<T> &B)
 	free(padded_mat_c);
 }
 
-template<class T>
-Mat<T> cnet::Mat<T>::operator^(const Mat<T> &B) const
+template<Numeric T>
+Mat<T> cnet::mathops::Mat<T>::operator^(const Mat<T> &B) const
 {
 	if (shape_.cols != B.get_cols() || shape_.rows != B.get_rows())
 		throw invalid_argument("invalid argument: Matrices have different sizes");
@@ -402,8 +435,8 @@ Mat<T> cnet::Mat<T>::operator^(const Mat<T> &B) const
 	return C;
 }
 
-template<class T>
-void cnet::Mat<T>::operator^=(const Mat<T> &B)
+template<Numeric T>
+void cnet::mathops::Mat<T>::operator^=(const Mat<T> &B)
 {
 	if (shape_.cols != B.get_cols() || shape_.rows != B.get_rows())
 		throw invalid_argument("invalid argument: Matrices have different sizes");
@@ -412,25 +445,41 @@ void cnet::Mat<T>::operator^=(const Mat<T> &B)
 	hardmard_mul_raw_mat(mat_, b_allocated_mat, shape_.rows, shape_.cols);
 }
 
-template<class T>
-void cnet::Mat<T>::operator=(const initializer_list<initializer_list<T>> &m)
+template<Numeric T>
+void cnet::mathops::Mat<T>::operator=(const initializer_list<initializer_list<T>> &M)
 {
-	if (m.size() == 0) throw invalid_argument("invalid argument: Empty initializer structure");
+	if (M.size() == 0) throw invalid_argument("invalid argument: Empty initializer structure");
 
-	size_t n = m.begin()->size();
-	for (std::size_t i = 1; i < m.size(); i++)
-		if (n != (m.begin() + i)->size())
+	size_t n = M.begin()->size();
+	for (size_t i = 1; i < M.size(); i++)
+		if (n != (M.begin() + i)->size())
 			throw invalid_argument("invalid argument: Invalid structure of the matrix");
-
-	resize(m.size(), n);
 	
-	for (std::size_t i = 0; i < shape_.rows; i++)
-		for (std::size_t j = 0; j < shape_.cols; j++)
-			mat_[i * n + j] = *((m.begin() + i)->begin() + j);
+	resize(M.size(), n);
+	
+	for (size_t i = 0; i < shape_.rows; i++)
+		for (size_t j = 0; j < shape_.cols; j++)
+			mat_[i * n + j] = *((M.begin() + i)->begin() + j);
 }
 
-template<class T>
-void cnet::Mat<T>::operator=(const Mat<T> &M)
+
+// template<Numeric T>
+// void cnet::mathops::Mat<T>::operator=(const initializer_list<T> &M)
+// {
+// 	if (M.size() == 0) throw invalid_argument("invalid argument: Empty initializer structure");
+
+// 	size_t n = M.size();
+	
+// 	shape_.cols = n;
+// 	shape_.rows = 1;
+// 	mat_ = (T *) alloc_mem_matrix(shape_.rows * shape_.cols, sizeof(T));
+	
+// 	for (size_t i = 0; i < shape_.cols; i++)
+// 		mat_[i] = *(M.begin() + i);
+// }
+
+template<Numeric T>
+void cnet::mathops::Mat<T>::operator=(const Mat<T> &M)
 {
 	T *allocated_mat = M.get_allocated_mat();
 	
@@ -439,8 +488,8 @@ void cnet::Mat<T>::operator=(const Mat<T> &M)
 		   shape_.cols, shape_.cols, shape_.cols);
 }
 
-template<class T>
-Mat<T> cnet::Mat<T>::operator*(T a) const
+template<Numeric T>
+Mat<T> cnet::mathops::Mat<T>::operator*(T a) const
 {
 	if (shape_.rows == 0 || shape_.cols == 0)
 		throw invalid_argument("invalid argument: invalid shape of matrix");
@@ -456,8 +505,8 @@ Mat<T> cnet::Mat<T>::operator*(T a) const
 	return C;
 }
 
-template<class T>
-void cnet::Mat<T>::operator*=(T a)
+template<Numeric T>
+void cnet::mathops::Mat<T>::operator*=(T a)
 {
 	if (shape_.rows == 0 || shape_.cols == 0)
 		throw invalid_argument("invalid argument: invalid shape of matrix");
@@ -465,9 +514,8 @@ void cnet::Mat<T>::operator*=(T a)
 	scalar_mul_raw_mat(mat_, a, shape_.rows, shape_.cols);
 }
 
-// TODO: Let the user to chose its own randomizer funciont
-template<class T>
-Mat<T> &cnet::Mat<T>::rand(T a, T b)
+template<Numeric T>
+Mat<T> &cnet::mathops::Mat<T>::rand(T a, T b)
 {
 	if (shape_.rows == 0 || shape_.cols == 0)
 		throw invalid_argument("invalid argument: Invalid matrix");
@@ -483,8 +531,8 @@ Mat<T> &cnet::Mat<T>::rand(T a, T b)
 	return *this;
 }
 
-template<class T>
-T cnet::Mat<T>::grand_sum(void) const
+template<Numeric T>
+T cnet::mathops::Mat<T>::grand_sum(void) const
 {
 	if (shape_.rows == 0 || shape_.cols == 0)
 		throw invalid_argument("invalid argument: Invalid matrix");
@@ -492,10 +540,10 @@ T cnet::Mat<T>::grand_sum(void) const
 	return grand_sum_raw_mat(mat_, shape_.rows, shape_.cols);
 }
 
-template class cnet::Mat<float>;
-template class cnet::Mat<double>;
+template class cnet::mathops::Mat<float32>;
+template class cnet::mathops::Mat<float64>;
 
 // Not yet for complex value
-// template class cnet::Mat<std::complex<double>>;
+// template Numeric cnet::mathops::Mat<std::complex<float64>>;
 // How we can deal the complex data type
 // https://stackoverflow.com/questions/13636540/how-to-check-for-the-type-of-a-template-parameter

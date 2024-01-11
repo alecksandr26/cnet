@@ -8,7 +8,15 @@ add_executable(example_layer
   example_layer.cpp
 )
 
+add_executable(example_var
+  example_var.cpp
+)
+
 target_link_libraries(bench_my_lib
+  PRIVATE ${CMAKE_PROJECT_NAME}
+)
+
+target_link_libraries(example_var
   PRIVATE ${CMAKE_PROJECT_NAME}
 )
 
@@ -26,8 +34,17 @@ if(Python_Interpreter_FOUND)
     COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/bench_python.py
     COMMENT "Running bench_python.py with ${Python_EXECUTABLE}"
   )
-endif()
 
+  set(NET_PYTHON "python_xor_net")
+  add_custom_target(${NET_PYTHON})
+
+  add_custom_command(
+    TARGET ${NET_PYTHON}
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/python_xor_net.py
+    COMMENT "Running python_xor_net.py with ${Python_EXECUTABLE}"
+  )
+  
+endif()
 
 find_package(GSL)
 if(GSL_FOUND)
@@ -35,15 +52,16 @@ if(GSL_FOUND)
   add_executable(bench_c
     bench_c.c
   )
-
+  
   target_include_directories(bench_c PRIVATE ${GSL_INCLUDE_DIRS})
   target_link_libraries(bench_c PRIVATE ${GSL_LIBRARIES})
 endif()
 
+add_executable(c_xor_net
+  c_xor_net.c
+)
 
-
-
-
+target_link_libraries(c_xor_net PRIVATE m)
 
 
 

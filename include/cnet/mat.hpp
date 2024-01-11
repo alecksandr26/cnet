@@ -11,20 +11,47 @@
 #define MAT_INCLUDED
 
 #include <cstddef>
-#include <complex>
-#include <iomanip>
-#include <vector>
-#include <immintrin.h>
+#include <ostream>
 #include <type_traits>
+#include <concepts>
 
-#include "utils_avx.hpp"
+#include "dtypes.hpp"
 
-namespace cnet {
-	struct Shape {
-		std::size_t rows, cols;
-	};
+namespace cnet::mathops {
+	using namespace cnet::dtypes;
 	
-	template<class T>
+	class Shape {
+	public:
+		std::size_t rows, cols;
+
+		Shape() = default;
+		
+		constexpr Shape(const std::initializer_list<std::size_t> &l)
+		{
+			if (l.size() > 2)
+				throw std::invalid_argument("invalid argument: Invalid list of initializer");
+			rows = *(l.begin());
+			cols = *(l.begin() + 1);
+		}
+		
+		constexpr Shape(std::size_t init_rows, std::size_t init_cols)
+		{
+			rows = init_rows;
+			cols = init_cols;
+		}
+
+		bool operator==(const Shape &s) { return rows == s.rows and cols == s.cols; }
+		
+		friend std::ostream& operator<<(std::ostream& os, const Shape &shape) {
+			os << "shape=(rows=" << shape.rows << ", cols=" << shape.cols << ")";
+			return os;
+		}
+	};
+
+	template<typename T>
+	concept Numeric = std::is_arithmetic_v<T>;
+	
+	template<Numeric T>
 	class Mat {
 	public:
 		Mat(void);
@@ -34,8 +61,10 @@ namespace cnet {
 		Mat(Shape shape);
 		Mat(std::size_t rows, std::size_t cols, T init_val);
 		Mat(Shape shape, T init_val);
-		Mat(const std::initializer_list<std::initializer_list<T>> &m);
+		Mat(const std::initializer_list<std::initializer_list<T>> &M);
+		// Mat(const std::initializer_list<T> &M);
 		Mat(const Mat<T> &M);
+		void operator()(const Mat<T> &M);
 		
 		Mat<T> &resize(std::size_t rows, std::size_t cols);
 		Mat<T> &resize(std::size_t rows, std::size_t cols, T init_val);
@@ -50,10 +79,12 @@ namespace cnet {
 		T *get_allocated_mat(void) const;
 		Mat<T> &rand(T a, T b);
 		T grand_sum(void) const;
-		
+
+
 		T &operator()(std::size_t row, std::size_t col) const;
-		T &operator[](size_t i) const;
-		void operator=(const std::initializer_list<std::initializer_list<T>> &m);
+		T &operator[](std::size_t i) const;
+		void operator=(const std::initializer_list<std::initializer_list<T>> &M);
+		// void operator=(const std::initializer_list<T> &M);
 		void operator=(const Mat<T> &B);
 		Mat<T> operator+(const Mat<T> &B) const;
 		Mat<T> operator-(const Mat<T> &B) const;
@@ -66,8 +97,9 @@ namespace cnet {
 		void operator*=(T a);
 		void operator^=(const Mat<T> &B); // element-wise multiplication or Hadamard product
 		
-		friend std::ostream &operator<<(std::ostream &os, const Mat<T> &M) {
-			os << "Mat(\n";
+		friend std::ostream &operator<<(std::ostream &os, const Mat<T> &M)
+		{
+			os << "Mat=(\n";
 			os << "[";
 			for (std::size_t i = 0; i < M.shape_.rows; i++) {
 				if (i > 0)
@@ -82,14 +114,16 @@ namespace cnet {
 				if (i < M.shape_.rows - 1)
 					os << "\n";
 			}
-			os << "],\nshape=(" << M.shape_.rows << ", " << M.shape_.cols << "), dtype="
-			   << ((std::is_same<T, double>::value) ? "float64" : "float32") << ", "
+			os << "],\n" << M.shape_ << ", "
+			   << ((std::is_same<T, float64>::value)
+			       ? CnetDtype(FLOAT_64_DTYPE)
+			       : CnetDtype(FLOAT_32_DTYPE)) << ", "
 			   << "addrs=" << (void *) &M << ")";
 			
 			return os;
 		}
 
-	private:
+	protected:
 		Shape shape_;
 		T *mat_;
 	};

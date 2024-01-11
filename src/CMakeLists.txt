@@ -5,7 +5,7 @@ project(${CMAKE_PROJECT_NAME})
 # )
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
-  utils_mat.cpp strassen.cpp mat.cpp
+  utils_mat.cpp strassen.cpp mat.cpp variable.cpp afuncs.cpp cfuncs.cpp backprop.cpp weights.cpp layers.cpp
 )
 
 # mat.cpp afunc.cpp cost.cpp layer.cpp

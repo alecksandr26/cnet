@@ -24,13 +24,21 @@ add_executable(test_mat
   test_mat.cpp
 )
 
-# add_executable(test_afunc
-#   test_afunc.cpp
-# )
+add_executable(test_variable
+  test_variable.cpp
+)
 
-# add_executable(test_layer
-#   test_layer.cpp
-# )
+add_executable(test_afuncs
+  test_afuncs.cpp
+)
+
+add_executable(test_cfuncs
+  test_cfuncs.cpp
+)
+
+add_executable(test_layer
+  test_layer.cpp
+)
 
 # add_executable(test_model
 #   test_model.cpp
@@ -43,17 +51,29 @@ target_link_libraries(test_mat
   GTest::gtest_main
 )
 
-# target_link_libraries(test_afunc
-#   PRIVATE
-#   ${CMAKE_PROJECT_NAME}
-#   GTest::gtest_main
-# )
+target_link_libraries(test_variable
+  PRIVATE
+  ${CMAKE_PROJECT_NAME}
+  GTest::gtest_main
+)
 
-# target_link_libraries(test_layer
-#   PRIVATE
-#   ${CMAKE_PROJECT_NAME}
-#   GTest::gtest_main
-# )
+target_link_libraries(test_afuncs
+  PRIVATE
+  ${CMAKE_PROJECT_NAME}
+  GTest::gtest_main
+)
+
+target_link_libraries(test_cfuncs
+  PRIVATE
+  ${CMAKE_PROJECT_NAME}
+  GTest::gtest_main
+)
+
+target_link_libraries(test_layer
+  PRIVATE
+  ${CMAKE_PROJECT_NAME}
+  GTest::gtest_main
+)
 
 # target_link_libraries(test_model
 #   PRIVATE
@@ -63,20 +83,22 @@ target_link_libraries(test_mat
 
 include(GoogleTest)
 gtest_discover_tests(test_mat)
+gtest_discover_tests(test_variable)
+gtest_discover_tests(test_afuncs)
+gtest_discover_tests(test_cfuncs)
+gtest_discover_tests(test_layer)
 
-# gtest_discover_tests(test_afunc)
-# gtest_discover_tests(test_layer)
 # gtest_discover_tests(test_model)
 
 # include(CTest)
 
 # add_executable(test_mat ${CMAKE_CURRENT_SOURCE_DIR}/test/test_mat.cpp)
-# add_executable(test_afunc ${CMAKE_CURRENT_SOURCE_DIR}/test/test_afunc.cpp)
+# add_executable(test_afuncs ${CMAKE_CURRENT_SOURCE_DIR}/test/test_afunc.cpp)
 # add_executable(test_layer ${CMAKE_CURRENT_SOURCE_DIR}/test/test_layer.cpp)
 # add_executable(test_ann ${CMAKE_CURRENT_SOURCE_DIR}/test/test_ann.cpp)
 
 # target_link_libraries(test_mat cnet)
-# target_link_libraries(test_afunc cnet)
+# target_link_libraries(test_afuncs cnet)
 # target_link_libraries(test_layer cnet)
 # target_link_libraries(test_ann cnet)
 
@@ -89,7 +111,7 @@ gtest_discover_tests(test_mat)
 #   --show-leak-kinds=all
 #   --max-stackframe=62179200 ./test_mat)
 
-# add_test(NAME test_afunc
+# add_test(NAME test_afuncs
 #   COMMAND valgrind
 #   --error-exitcode=1
 #   --leak-check=full

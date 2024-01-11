@@ -1,3 +1,4 @@
+#include "cnet/dtypes.hpp"
 #include "cnet/mat.hpp"
 #include "cnet/utils_avx.hpp"
 #include "cnet/utils_mat.hpp"
@@ -6,12 +7,12 @@
 #include <type_traits>
 #include <cassert>
 #include <cstring>
-#include <immintrin.h>
-#include <omp.h>
+#include <cstdint>
 
-using namespace cnet;
-using namespace cnet::utils;
-using namespace cnet::strassen;
+using namespace cnet::dtypes;
+using namespace cnet::mathops;
+using namespace utils;
+using namespace strassen;
 using namespace std;
 
 #define MIN_ELEMENTS_TO_MAT_MUL_STRASSEN 128
@@ -42,14 +43,14 @@ static int precomputed_pow_2_n[] = {
 	65536,	  131072,   262144,   524288,	 1048576,   2097152,  4194304, 8388608,
 	16777216, 33554432, 67108864, 134217728, 268435456, 536870912};
 
-size_t cnet::strassen::pad_size(size_t a_rows, size_t a_cols, size_t b_rows, size_t b_cols)
+size_t cnet::mathops::strassen::pad_size(size_t a_rows, size_t a_cols, size_t b_rows, size_t b_cols)
 {
 	size_t max_dimension = max(max(a_rows, b_rows), max(a_cols, b_cols));
 	return precomputed_pow_2_n[fast_log2(max_dimension) + 1];
 }
 
 template<typename T>
-T *cnet::strassen::pad_mat(const Mat<T> &A, size_t n)
+T *cnet::mathops::strassen::pad_mat(const Mat<T> &A, size_t n)
 {
 	T *padded_mat, *allocated_mat = A.get_allocated_mat();
 	
@@ -79,7 +80,7 @@ T *cnet::strassen::pad_mat(const Mat<T> &A, size_t n)
 
 
 template<typename T>
-void cnet::strassen::mat_mul(T *A, T *B, T *C, size_t n, size_t N)
+void cnet::mathops::strassen::mat_mul(T *A, T *B, T *C, size_t n, size_t N)
 {
 	if (n <= MIN_ELEMENTS_TO_MAT_MUL_STRASSEN) {
 		mul_sqr_raw_mat(A, B, C, n);
@@ -105,12 +106,12 @@ void cnet::strassen::mat_mul(T *A, T *B, T *C, size_t n, size_t N)
 	mat_mul(A + k * N + k, B + k * N + k, C + k * N + k, k, N);
 }
 
-template double *cnet::strassen::pad_mat(const Mat<double> &A, size_t n);
-template float *cnet::strassen::pad_mat(const Mat<float> &A, size_t n);
-template void cnet::strassen::mat_mul(double *, double *, double *, size_t, size_t);
-template void cnet::strassen::mat_mul(float *, float *, float *, size_t, size_t);
+template float64 *cnet::mathops::strassen::pad_mat(const Mat<float64> &A, size_t n);
+template float32 *cnet::mathops::strassen::pad_mat(const Mat<float32> &A, size_t n);
+template void cnet::mathops::strassen::mat_mul(float64 *A, float64 *B, float64 *C, size_t n, size_t N);
+template void cnet::mathops::strassen::mat_mul(float32 *A, float32 *B, float32 *C, size_t n, size_t N);
 
-// Previos strassen algorithm
+// Previos mathops::strassen algorithm
 #if 0
 template<typename T>
 void strassen_mat_mul(T *A, T *B, T *C, std::size_t n, std::size_t N)

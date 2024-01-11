@@ -4,7 +4,7 @@
 #include "utils_avx.hpp"
 #include "mat.hpp"
 
-namespace cnet::strassen {
+namespace cnet::mathops::strassen {
 	std::size_t pad_size(std::size_t a_rows, std::size_t a_cols,
 			     std::size_t b_rows, std::size_t b_cols);
 	

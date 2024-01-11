@@ -1,14 +1,15 @@
 #include <iostream>
 #include <chrono>
 #include <memory>
+#include <iomanip>
 
 #include "cnet/mat.hpp"
-#include "cnet/afunc.hpp"
-#include "cnet/layer.hpp"
+// #include "cnet/afuncs.hpp"
+// #include "cnet/layer.hpp"
 
-using namespace cnet;
-using namespace cnet::layer;
-using namespace cnet::afunc;
+using namespace cnet::mathops;
+// using namespace cnet::layer;
+// using namespace cnet::afunc;
 
 int main(void)
 {

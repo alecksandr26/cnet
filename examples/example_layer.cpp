@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "cnet/layer.hpp"
+// #include "cnet/layer.hpp"
 
-using namespace cnet;
-using namespace cnet::layer;
+// using namespace cnet;
+// using namespace cnet::layer;
 
 int main(void)
 {

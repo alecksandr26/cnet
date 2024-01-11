@@ -1,39 +1,119 @@
-#ifndef UTILS_AVX
-#define UTILS_AVX
+#ifndef UTILS_AVX_INCLUDED
+#define UTILS_AVX_INCLUDED
 
+#include <cmath>
 #include <immintrin.h>
 
-namespace cnet::utils {
+#include "dtypes.hpp"
+
+namespace cnet::mathops::utils {
+	using namespace cnet::dtypes;
+	
 	typedef __m256d vec4d;
 	typedef __m128d vec2d;
 	typedef __m256 vec8f;
 	typedef __m128 vec4f;
 
-	inline void mov_avx256(double *dst, double *src)
+	// To move and store data more quickly
+	inline void mov_avx256(float64 *dst, float64 *src)
 	{
 		vec4d vec = _mm256_loadu_pd(src);
 		_mm256_storeu_pd(dst, vec);
 	}
 
-	inline void mov_avx256(float *dst, float *src)
+	inline void mov_avx256(float32 *dst, float32 *src)
 	{
 		vec8f vec = _mm256_loadu_ps(src);
 		_mm256_storeu_ps(dst, vec);
 	}
 
-	inline void mov_avx128(double *dst, double *src)
+	inline void mov_avx128(float64 *dst, float64 *src)
 	{
 		vec2d vec = _mm_loadu_pd(src);
 		_mm_storeu_pd(dst, vec);
 	}
 
-	inline void mov_avx128(float *dst, float *src)
+	inline void mov_avx128(float32 *dst, float32 *src)
 	{
 		vec4f vec = _mm_loadu_ps(src);
 		_mm_storeu_ps(dst, vec);
 	}
-	
-	inline double hsum_avx256(vec4d vec)
+
+	inline void mov_avx_8(float64 *dst, float64 *src)
+	{
+		mov_avx256(dst, src);
+		mov_avx256(dst + 4, src + 4);
+	}
+
+	inline void mov_avx_8(float32 *dst, float32 *src)
+	{
+		mov_avx256(dst, src);
+	}
+
+	inline void mov_avx_4(float64 *dst, float64 *src)
+	{
+		mov_avx256(dst, src);
+	}
+
+	inline void mov_avx_4(float32 *dst, float32 *src)
+	{
+		mov_avx128(dst, src);
+	}
+
+	inline void mov_avx_2(float64 *dst, float64 *src)
+	{
+		mov_avx128(dst, src);
+	}
+
+	inline void mov_avx_2(float32 *dst, float32 *src)
+	{
+		dst[0] = src[0];
+		dst[1] = src[1];
+	}
+
+	inline vec4d init_avx256(float64 init_val)
+	{
+		return _mm256_set_pd(init_val, init_val, init_val, init_val);
+	}
+
+	inline vec8f init_avx256(float32 init_val)
+	{
+		return _mm256_set_ps(init_val, init_val, init_val, init_val,
+				    init_val, init_val, init_val, init_val);
+	}
+
+	inline vec4f init_avx128(float32 init_val)
+	{
+		return _mm_set_ps(init_val, init_val, init_val, init_val);
+	}
+
+	inline void store_val_avx_8(float64 *dst, float64 val)
+	{
+		vec4d  vec = init_avx256(val);
+		_mm256_storeu_pd(dst, vec);
+		_mm256_storeu_pd(dst + 4, vec);
+	}
+
+	inline void store_val_avx_8(float32 *dst, float32 val)
+	{
+		vec8f  vec = init_avx256(val);
+		_mm256_storeu_ps(dst, vec);
+	}
+
+	inline void store_val_avx_4(float64 *dst, float64 val)
+	{
+		vec4d  vec = init_avx256(val);
+		_mm256_storeu_pd(dst, vec);
+	}
+
+	inline void store_val_avx_4(float32 *dst, float32 val)
+	{
+		vec4f  vec = init_avx128(val);
+		_mm_storeu_ps(dst, vec);
+	}
+
+	// To do an horizontal sumation of the whole vectors
+	inline float64 hsum_avx256(vec4d vec)
 	{
 		vec2d vlow  = _mm256_castpd256_pd128(vec);
 		vec2d vhigh = _mm256_extractf128_pd(vec, 1);	    // high 128
@@ -45,7 +125,7 @@ namespace cnet::utils {
 		return _mm_cvtsd_f64(_mm_add_sd(vlow, high64));	       // reduce to scalar
 	}
 
-	inline float hsum_avx256(vec8f vec)
+	inline float32 hsum_avx256(vec8f vec)
 	{
 		// hiQuad = ( x7, x6, x5, x4 )
 		vec4f hiQuad = _mm256_extractf128_ps(vec, 1);
@@ -68,7 +148,7 @@ namespace cnet::utils {
 		return _mm_cvtss_f32(sum);
 	}
 
-	inline float hsum_avx128(vec4f vec)
+	inline float32 hsum_avx128(vec4f vec)
 	{
 		vec4f vlow = vec;
 		vec4f high64 = _mm_unpackhi_ps(vlow, vlow);
@@ -77,16 +157,17 @@ namespace cnet::utils {
 	}
 
 
-	inline void add_avx256(double *dst, double *src)
+	// To add several values more quickly
+	inline void add_avx256(float64 *dst, float64 *src)
 	{
 		vec4d vec_a = _mm256_loadu_pd(dst);
 		vec4d vec_b = _mm256_loadu_pd(src);
 		vec_a = _mm256_add_pd(vec_a, vec_b);
 		_mm256_storeu_pd(dst, vec_a);
 	}
+	
 
-
-	inline void add_avx256(float *dst, float *src)
+	inline void add_avx256(float32 *dst, float32 *src)
 	{
 		vec8f vec_a = _mm256_loadu_ps(dst);
 		vec8f vec_b = _mm256_loadu_ps(src);
@@ -94,7 +175,7 @@ namespace cnet::utils {
 		_mm256_storeu_ps(dst, vec_a);
 	}
 	
-	inline void add_avx128(float *dst, float *src)
+	inline void add_avx128(float32 *dst, float32 *src)
 	{
 		vec4f vec_a = _mm_loadu_ps(dst);
 		vec4f vec_b = _mm_loadu_ps(src);
@@ -102,8 +183,30 @@ namespace cnet::utils {
 		_mm_storeu_ps(dst, vec_a);
 	}
 
+	inline void add_avx_8(float64 *dst, float64 *src)
+	{
+		add_avx256(dst, src);
+		add_avx256(dst + 4, src + 4);
+	}
 
-	inline void sub_avx256(double *dst, double *src)
+	inline void add_avx_4(float64 *dst, float64 *src)
+	{
+		add_avx256(dst, src);
+	}
+
+	inline void add_avx_8(float32 *dst, float32 *src)
+	{
+		add_avx256(dst, src);
+	}
+
+	inline void add_avx_4(float32 *dst, float32 *src)
+	{
+		add_avx128(dst, src);
+	}
+	
+
+	// To sub several values more quickly
+	inline void sub_avx256(float64 *dst, float64 *src)
 	{
 		vec4d vec_a = _mm256_loadu_pd(dst);
 		vec4d vec_b = _mm256_loadu_pd(src);
@@ -112,7 +215,7 @@ namespace cnet::utils {
 	}
 
 
-	inline void sub_avx256(float *dst, float *src)
+	inline void sub_avx256(float32 *dst, float32 *src)
 	{
 		vec8f vec_a = _mm256_loadu_ps(dst);
 		vec8f vec_b = _mm256_loadu_ps(src);
@@ -120,7 +223,7 @@ namespace cnet::utils {
 		_mm256_storeu_ps(dst, vec_a);
 	}
 	
-	inline void sub_avx128(float *dst, float *src)
+	inline void sub_avx128(float32 *dst, float32 *src)
 	{
 		vec4f vec_a = _mm_loadu_ps(dst);
 		vec4f vec_b = _mm_loadu_ps(src);
@@ -128,8 +231,29 @@ namespace cnet::utils {
 		_mm_storeu_ps(dst, vec_a);
 	}
 
+	inline void sub_avx_8(float64 *dst, float64 *src)
+	{
+		sub_avx256(dst, src);
+		sub_avx256(dst + 4, src + 4);
+	}
 
-	inline void mul_avx256(double *dst, double *src)
+	inline void sub_avx_4(float64 *dst, float64 *src)
+	{
+		sub_avx256(dst, src);
+	}
+
+	inline void sub_avx_8(float32 *dst, float32 *src)
+	{
+		sub_avx256(dst, src);
+	}
+
+	inline void sub_avx_4(float32 *dst, float32 *src)
+	{
+		sub_avx128(dst, src);
+	}
+	
+	// To mul several values more quickly
+	inline void mul_avx256(float64 *dst, float64 *src)
 	{
 		vec4d vec_a = _mm256_loadu_pd(dst);
 		vec4d vec_b = _mm256_loadu_pd(src);
@@ -138,7 +262,7 @@ namespace cnet::utils {
 	}
 
 
-	inline void mul_avx256(float *dst, float *src)
+	inline void mul_avx256(float32 *dst, float32 *src)
 	{
 		vec8f vec_a = _mm256_loadu_ps(dst);
 		vec8f vec_b = _mm256_loadu_ps(src);
@@ -146,7 +270,7 @@ namespace cnet::utils {
 		_mm256_storeu_ps(dst, vec_a);
 	}
 	
-	inline void mul_avx128(float *dst, float *src)
+	inline void mul_avx128(float32 *dst, float32 *src)
 	{
 		vec4f vec_a = _mm_loadu_ps(dst);
 		vec4f vec_b = _mm_loadu_ps(src);
@@ -155,7 +279,29 @@ namespace cnet::utils {
 	}
 
 
-	inline void mul_avx256(double *dst, vec4d val)
+	inline void mul_avx_8(float64 *dst, float64 *src)
+	{
+		mul_avx256(dst, src);
+		mul_avx256(dst + 4, src + 4);
+	}
+
+	inline void mul_avx_4(float64 *dst, float64 *src)
+	{
+		mul_avx256(dst, src);
+	}
+
+	inline void mul_avx_8(float32 *dst, float32 *src)
+	{
+		mul_avx256(dst, src);
+	}
+
+	inline void mul_avx_4(float32 *dst, float32 *src)
+	{
+		mul_avx128(dst, src);
+	}
+
+	// To do an scalar vector product more quickly
+	inline void mul_avx256(float64 *dst, vec4d val)
 	{
 		vec4d vec_a = _mm256_loadu_pd(dst);
 		vec_a = _mm256_mul_pd(vec_a, val);
@@ -163,37 +309,213 @@ namespace cnet::utils {
 	}
 
 
-	inline void mul_avx256(float *dst, vec8f val)
+	inline void mul_avx256(float32 *dst, vec8f val)
 	{
 		vec8f vec_a = _mm256_loadu_ps(dst);
 		vec_a = _mm256_mul_ps(vec_a, val);
 		_mm256_storeu_ps(dst, vec_a);
 	}
 	
-	inline void mul_avx128(float *dst, vec4f val)
+	inline void mul_avx128(float32 *dst, vec4f val)
 	{
 		vec4f vec_a = _mm_loadu_ps(dst);
 		vec_a = _mm_mul_ps(vec_a, val);
 		_mm_storeu_ps(dst, vec_a);
 	}
 
+	inline void mul_avx_8(float64 *dst, float64 val)
+	{
+		vec4d vec = init_avx256(val);
+		mul_avx256(dst, vec);
+		mul_avx256(dst + 4, vec);
+	}
 
-	inline void sum_avx256(vec4d &val, double *src)
+	inline void mul_avx_4(float64 *dst, float64 val)
+	{
+		vec4d vec = init_avx256(val);
+		mul_avx256(dst, vec);
+	}
+
+	inline void mul_avx_8(float32 *dst, float32 val)
+	{
+		vec8f vec = init_avx256(val);
+		mul_avx256(dst, vec);
+	}
+
+	inline void mul_avx_4(float32 *dst, float32 val)
+	{
+		vec4f vec = init_avx128(val);
+		mul_avx128(dst, vec);
+	}
+
+
+	inline void sum_avx256(vec4d &val, float64 *src)
 	{
 		vec4d vec_a = _mm256_loadu_pd(src);
 		val = _mm256_add_pd(val, vec_a);
 	}
 
-	inline void sum_avx256(vec8f &val, float *src)
+	inline void sum_avx256(vec8f &val, float32 *src)
 	{
 		vec8f vec_a = _mm256_loadu_ps(src);
 		val = _mm256_add_ps(val, vec_a);
 	}
 
-	inline void sum_avx128(vec4f &val, float *src)
+	inline void sum_avx128(vec4f &val, float32 *src)
 	{
 		vec4f vec_a = _mm_loadu_ps(src);
 		val = _mm_add_ps(val, vec_a);
+	}
+
+
+	// To initlized exp vec
+	inline vec4d exp_avx256(float64 *src)
+	{
+		return _mm256_set_pd(std::exp(src[0]), std::exp(src[1]), std::exp(src[2]), std::exp(src[3]));
+	}
+
+	inline vec8f exp_avx256(float32 *src)
+	{
+		return _mm256_set_ps(std::exp(src[0]), std::exp(src[1]), std::exp(src[2]), std::exp(src[3]),
+				     std::exp(src[4]), std::exp(src[5]), std::exp(src[6]), std::exp(src[7]));
+	}
+
+	inline vec4f exp_avx128(float32 *src)
+	{
+		return _mm_set_ps(std::exp(src[0]), std::exp(src[1]), std::exp(src[2]), std::exp(src[3]));
+	}
+
+	// To compute  quickly the sigmoid function
+	// S(x) = 1 / (1 + exp(- x))
+	inline void sigmoid_avx_4(float64 *dst, float64 *src)
+	{
+		vec4d ones = init_avx256((float64) 1.0);
+		vec4d neg_ones = init_avx256((float64) -1.0);
+		vec4d vec = _mm256_loadu_pd(src);
+		vec4d e = _mm256_mul_pd(vec, neg_ones);
+		e = _mm256_set_pd(std::exp(e[0]), std::exp(e[1]), std::exp(e[2]), std::exp(e[3]));
+		vec4d res = _mm256_add_pd(ones, e);
+		res = _mm256_div_pd(ones, res);
+		_mm256_storeu_pd(dst, _mm256_set_pd(res[0], res[1], res[2], res[3]));
+	}
+
+	inline void sigmoid_avx_8(float64 *dst, float64 *src)
+	{
+		sigmoid_avx_4(dst, src);
+		sigmoid_avx_4(dst + 4, src + 4);
+	}
+
+	inline void sigmoid_avx_8(float32 *dst, float32 *src)
+	{
+		vec8f ones = init_avx256((float32) 1.0);
+		vec8f neg_ones = init_avx256((float32) -1.0);
+		vec8f vec = _mm256_loadu_ps(src);
+		vec8f e = _mm256_mul_ps(vec, neg_ones);
+		e = _mm256_set_ps(std::exp(e[0]), std::exp(e[1]), std::exp(e[2]), std::exp(e[3]),
+				  std::exp(e[4]), std::exp(e[5]), std::exp(e[6]), std::exp(e[7]));
+		vec8f res = _mm256_add_ps(ones, e);
+		res = _mm256_div_ps(ones, res);
+		_mm256_storeu_ps(dst, _mm256_set_ps(res[0], res[1], res[2], res[3],
+						    res[4], res[5], res[6], res[7]));
+	}
+
+	inline void sigmoid_avx_4(float32 *dst, float32 *src)
+	{
+		vec4f ones = init_avx128((float32) 1.0);
+		vec4f neg_ones = init_avx128((float32) -1.0);
+		vec4f vec = _mm_loadu_ps(src);
+		vec4f e = _mm_mul_ps(vec, neg_ones);
+		e = _mm_set_ps(std::exp(e[0]), std::exp(e[1]), std::exp(e[2]), std::exp(e[3]));
+		vec4f res = _mm_add_ps(ones, e);
+		res = _mm_div_ps(ones, res);
+		_mm_storeu_ps(dst, _mm_set_ps(res[0], res[1], res[2], res[3]));
+	}
+
+	// To compute quickly the derivate of sigmoid function
+	// S(x) = 1 / (2 + exp(- x) + exp(x))
+	inline void derivate_sigmoid_avx_4(float64 *dst, float64 *src)
+	{
+		vec4d ones = init_avx256((float64) 1.0);
+		vec4d twos = init_avx256((float64) 2.0);
+		vec4d neg_ones = init_avx256((float64) -1.0);
+		vec4d vec = _mm256_loadu_pd(src);
+		vec4d e1 = _mm256_mul_pd(vec, neg_ones);
+		e1 = _mm256_set_pd(std::exp(e1[0]), std::exp(e1[1]), std::exp(e1[2]), std::exp(e1[3]));
+		vec4d e2 = _mm256_set_pd(std::exp(vec[0]), std::exp(vec[1]),
+					 std::exp(vec[2]), std::exp(vec[3]));
+		vec4d res = _mm256_add_pd(twos, _mm256_add_pd(e1, e2));
+		res = _mm256_div_pd(ones, res);
+		_mm256_storeu_pd(dst, _mm256_set_pd(res[0], res[1], res[2], res[3]));
+	}
+
+	inline void derivate_sigmoid_avx_8(float64 *dst, float64 *src)
+	{
+		derivate_sigmoid_avx_4(dst, src);
+		derivate_sigmoid_avx_4(dst + 4, src + 4);
+	}
+
+	inline void derivate_sigmoid_avx_8(float32 *dst, float32 *src)
+	{
+		vec8f ones = init_avx256((float32) 1.0);
+		vec8f twos = init_avx256((float32) 2.0);
+		vec8f neg_ones = init_avx256((float32) -1.0);
+		vec8f vec = _mm256_loadu_ps(src);
+		vec8f e1 = _mm256_mul_ps(vec, neg_ones);
+		e1 = _mm256_set_ps(std::exp(e1[0]), std::exp(e1[1]), std::exp(e1[2]), std::exp(e1[3]),
+				   std::exp(e1[4]), std::exp(e1[5]), std::exp(e1[6]), std::exp(e1[7]));
+		vec8f e2 = _mm256_set_ps(std::exp(vec[0]), std::exp(vec[1]), std::exp(vec[2]), std::exp(vec[3]),
+					 std::exp(vec[4]), std::exp(vec[5]),
+					 std::exp(vec[6]), std::exp(vec[7]));
+		vec8f res = _mm256_add_ps(twos, _mm256_add_ps(e1, e2));
+		res = _mm256_div_ps(ones, res);
+		_mm256_storeu_ps(dst, _mm256_set_ps(res[0], res[1], res[2], res[3],
+						    res[4], res[5], res[6], res[7]));
+	}
+
+	inline void derivate_sigmoid_avx_4(float32 *dst, float32 *src)
+	{
+		vec4f ones = init_avx128((float32) 1.0);
+		vec4f twos = init_avx128((float32) 2.0);
+		vec4f neg_ones = init_avx128((float32) -1.0);
+		vec4f vec = _mm_loadu_ps(src);
+		vec4f e1 = _mm_mul_ps(vec, neg_ones);
+		e1 = _mm_set_ps(std::exp(e1[0]), std::exp(e1[1]), std::exp(e1[2]), std::exp(e1[3]));
+		vec4f e2 = _mm_set_ps(std::exp(vec[0]), std::exp(vec[1]), std::exp(vec[2]), std::exp(vec[3]));
+		vec4f res = _mm_add_ps(twos, _mm_add_ps(e1, e2));
+		res = _mm_div_ps(ones, res);
+		_mm_storeu_ps(dst, _mm_set_ps(res[0], res[1], res[2], res[3]));
+	}
+
+	// To compute  quickly the relu function
+	// R(x) = max(0, x)
+	inline void relu_avx_4(float64 *dst, float64 *src)
+	{
+		vec4d zeros = init_avx256((float64) 0.0);
+		vec4d vec = _mm256_loadu_pd(src);
+		vec = _mm256_max_pd(zeros, vec);
+		_mm256_storeu_pd(dst, vec);
+	}
+
+	inline void relu_avx_8(float64 *dst, float64 *src)
+	{
+		relu_avx_4(dst, src);
+		relu_avx_4(dst + 4, src + 4);
+	}
+
+	inline void relu_avx_8(float32 *dst, float32 *src)
+	{
+		vec8f zeros = init_avx256((float32) 0.0);
+		vec8f vec = _mm256_loadu_ps(src);
+		vec = _mm256_max_ps(zeros, vec);
+		_mm256_storeu_ps(dst, vec);
+	}
+
+	inline void relu_avx_4(float32 *dst, float32 *src)
+	{
+		vec4f zeros = init_avx128((float32) 0.0);
+		vec4f vec = _mm_loadu_ps(src);
+		vec = _mm_max_ps(zeros, vec);
+		_mm_storeu_ps(dst, vec);
 	}
 }
 

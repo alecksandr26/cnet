@@ -17,7 +17,7 @@ project(cnet VERSION 1.0.0
   LANGUAGES CXX
 )
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 if(UNIX)
   set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -pedantic -ggdb")
