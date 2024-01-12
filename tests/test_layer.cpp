@@ -6,6 +6,10 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <chrono>
+#include <cstdlib>
+#include <ctime>  // Include for using time as seed
+
+#include <omp.h>
 
 #include "cnet/dtypes.hpp"
 #include "cnet/variable.hpp"
@@ -1022,69 +1026,200 @@ TEST(LayerTestFloat64, TestFitMidLayer) {
 				EXPECT_NEAR(A[k](i, j), Y[k](i, j), 1e-1);
 }
 
+// Tends from 0.0 up to 0.4 
+#define TEND_TO_ZERO (static_cast<float32>(rand()) / RAND_MAX) / 2.0
 
-TEST(LayerTestFloat32, TestTwoLayerConvergence)
+// Goes from 0.6 up to 1.0
+#define TEND_TO_ONE static_cast<float32>(rand()) / (RAND_MAX / 0.5) + 0.6
+
+TEST(LayerTestFloat32, TestMultipleLayerConvergence)
 {
-	Dense L1(5, "Sigmoid"), L2(1, "Sigmoid");
-
-	L1.build(2).rand_uniform_range(0.0, 0.0);
-	L2.build(5).rand_uniform_range(0.0, 0.0);
+	// Poorly results with these arquiecture
+	// Dense L1(2, "Sigmoid"), L2(1, "Sigmoid");
 	
-	constexpr size_t N = 4;
+	// srand(time(0));
+	
+	// L1.build(2).rand_uniform_range(-1.0, 1.0);
+	// L2.build(2).rand_uniform_range(-1.0, 1.0);
 
+	Dense L1(3, "Relu"), L2(2, "Relu"), L3(1, "Sigmoid");
+	
+	srand(time(0));
+	
+	L1.build(2).rand_uniform_range(-1.0, 1.0);
+	L2.build(3).rand_uniform_range(-1.0, 1.0);
+	L3.build(2).rand_uniform_range(-1.0, 1.0);
 
-	Mat<float32> X[N] = {
-		{{0.0}, {0.0}},	// One column and two rows
-		{{0.0}, {1.0}},
+	// We need more data to solve this problem 4 examples is not enough
+	// constexpr size_t N = 4;
+	constexpr size_t N = 400; // a divisibly by four
+	
+	Mat<float32> X[N];
+	Mat<float32> Y[N];
+
+	// Generate random data for the xor problem
+	for (size_t i = 0; i < N; i += 4) {
+		cout << "---------------------\n" << endl;
+		cout << "cluster: 0 ^ 0 = 0" << endl;
+		
+		X[i].resize(2, 1);
+		Y[i].resize(1, 1);
+		
+		// Generate random inputs that tends to be zero
+		X[i](0, 0) = TEND_TO_ZERO;
+		X[i](1, 0) = TEND_TO_ZERO;
+		Y[i](0, 0) = TEND_TO_ZERO;
+		
+		cout << "Input: " << X[i] << " | Output: " << Y[i](0, 0) << endl;
+			
+		cout << "---------------------\n" << endl;
+		cout << "cluster: 0 ^ 1 = 1" << endl;
+		
+		X[i + 1].resize(2, 1);
+		Y[i + 1].resize(1, 1);
+		
+		X[i + 1](0, 0) = TEND_TO_ZERO;
+		X[i + 1](1, 0) = TEND_TO_ONE;
+		Y[i + 1](0, 0) = TEND_TO_ONE;
+		
+		cout << "Input: " << X[i + 1] << " | Output: " << Y[i + 1](0, 0) << endl;
+		
+		cout << "---------------------\n" << endl;
+		cout << "cluster: 1 ^ 0 = 1" << endl;
+		
+		X[i + 2].resize(2, 1);
+		Y[i + 2].resize(1, 1);
+		
+		// Generate random inputs that tends to be one
+		X[i + 2](0, 0) = TEND_TO_ONE;
+		
+		// Generate random inputs that tends to be zero
+		X[i + 2](1, 0) = TEND_TO_ZERO;
+		
+		// Generate random inputs that tends to be one
+		Y[i + 2](0, 0) = TEND_TO_ONE;
+		
+		cout << "Input: " << X[i + 2] << " | Output: " << Y[i + 2](0, 0) << endl;
+		
+		cout << "---------------------\n" << endl;
+		cout << "cluster: 1 ^ 1 = 0" << endl;
+		
+		X[i + 3].resize(2, 1);
+		Y[i + 3].resize(1, 1);
+		
+		
+		// Generate random inputs that tends to be one
+		X[i + 3](0, 0) = TEND_TO_ONE;
+		X[i + 3](1, 0) = TEND_TO_ONE;
+		
+		// Generate random inputs that tends to be zero
+		Y[i + 3](0, 0) = TEND_TO_ZERO;
+		
+		cout << "Input: " << X[i + 3] << " | Output: " << Y[i + 3](0, 0) << endl;
+	}
+	
+	// Xor, Test examples
+	Mat<float32> TX[4] = {
+		{{0.0}, {0.0}},
 		{{1.0}, {0.0}},
+		{{0.0}, {1.0}},
 		{{1.0}, {1.0}}
 	};
-
-	// Xor
-	Mat<float32> Y[N] = {
+	
+	Mat<float32> TY[4] = {
 		{{0.0}},
 		{{1.0}},
 		{{1.0}},
 		{{0.0}}
 	};
 
-
-	constexpr size_t epochs = 14000;
-	// constexpr double lr = 1.888888888;
-	// constexpr double lr = 1.888888888220900991;
-	constexpr double lr = 1.888888888220900991;
 	
-	Mat<float32> A1[N], A2[N];
+	constexpr size_t epochs = 500;
+	// constexpr gdouble lr = 1.888888888;
+	// constexpr double lr = 1.888888888220900991;
+	constexpr double lr = 0.01;
+	
+	Mat<float32> A1[N], A2[N], A3[N];
 	for (size_t e = 1; e <= epochs; e++) {
-		cout << "---------------------\n" << endl;
 		for (size_t i = 0; i < N; i++) {
 			// The feedforward of the model
 			A1[i] = L1(X[i]);
 			A2[i] = L2(A1[i]);
+			A3[i] = L3(A2[i]);
 
+			
 			// Compute the errors
-			Mat<float32> dE1 = MseDerivate(A2[i], Y[i], N);
-			Mat<float32> dE2 = L2.get_derror_dinput(dE1);
+			Mat<float32> dE3 = MseDerivate(A3[i], Y[i], N);
+			Mat<float32> dE2 = L3.get_derror_dinput(dE3);
+			Mat<float32> dE1 = L2.get_derror_dinput(dE2);
 			
-			L2.fit(dE1, A1[i], lr);
-			L1.fit(dE2, X[i], lr);
-			
+			// Fit the model
+			L3.fit(dE3, A2[i], lr);
+			L2.fit(dE2, A1[i], lr);
+			L1.fit(dE1, X[i], lr);
 		}
-		cout << "Epoch: " << e << " MSE: " << Mse(A2, Y, N).grand_sum() << endl;
+		
+		cout << "Epoch: " << e << " MSE: " << Mse(A3, Y, N).grand_sum() << endl;
 	}
 
-
+	cout << "\n\n---------------------\n\n" << endl;
+	cout << " MSE: " << Mse(A3, Y, N).grand_sum() << endl;
+	
 	cout << L1 << endl;
 	cout << "---------------------\n" << endl;
 	cout << L2 << endl;
-
-	for (size_t i = 0; i < N; i++) {
+	cout << "---------------------\n" << endl;
+	cout << L3 << endl;
+	
+	for (size_t i = 0; i < 4; i++) {
 		cout << "---------------------\n" << endl;
-		A2[i] = L2(L1(X[i]));
-		cout << "Outpu=" << endl;
-		cout << Y[i] << endl;
-		cout << "Predicted=" << endl;
-		cout << A2[i] << endl;
+		A3[i] = L3(L2(L1(TX[i])));
+		cout << "Outpu = " << TY[i](0, 0) << endl;
+		cout << "Predicted = " << A3[i](0, 0) <<  endl;
 	}
+
+
+	// Poorly results with just  2 neurons and 1 output neuron
+	// 54:  MSE: 0.119797
+	// 54: Dense=(
+	// 54: Weights=(Mat=(
+	// 54: [[2.29019e+12	1.78543e+12]
+	// 54:  [11.2275	-12.2]],
+	// 54: shape=(rows=2, cols=2), dtype=float32, addrs=0x7ffe8f78dc40),
+	// 54: dtype=float32, addrs=0x7ffe8f78dc10),
+	// 54: Biases=(Mat=(
+	// 54: [[7.03515e+13]
+	// 54:  [-6.85116]],
+	// 54: shape=(rows=2, cols=1), dtype=float32, addrs=0x7ffe8f78dc88),
+	// 54: dtype=float32, addrs=0x7ffe8f78dc58),
+	// 54: built=true, in=(shape=(rows=2, cols=1)), out=(shape=(rows=2, cols=1)), units=2, dtype=float32, use_bias=true, activation=Sigmoid)
+	// 54: ---------------------
+	// 54:
+	// 54: Dense=(
+	// 54: Weights=(Mat=(
+	// 54: [[0.15835	3.0999]],
+	// 54: shape=(rows=1, cols=2), dtype=float32, addrs=0x7ffe8f78ddc0),
+	// 54: dtype=float32, addrs=0x7ffe8f78dd90),
+	// 54: Biases=(Mat=(
+	// 54: [[-0.834186]],
+	// 54: shape=(rows=1, cols=1), dtype=float32, addrs=0x7ffe8f78de08),
+	// 54: dtype=float32, addrs=0x7ffe8f78ddd8),
+	// 54: built=true, in=(shape=(rows=2, cols=1)), out=(shape=(rows=1, cols=1)), units=1, dtype=float32, use_bias=true, activation=Sigmoid)
+	// 54: ---------------------
+	// 54:
+	// 54: Outpu = 0
+	// 54: Predicted = 0.337924
+	// 54: ---------------------
+	// 54:
+	// 54: Outpu = 1
+	// 54: Predicted = 0.915721
+	// 54: ---------------------
+	// 54:
+	// 54: Outpu = 1
+	// 54: Predicted = 0.337191
+	// 54: ---------------------
+	// 54:
+	// 54: Outpu = 0
+	// 54: Predicted = 0.337468
 }
 

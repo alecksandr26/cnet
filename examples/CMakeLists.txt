@@ -43,7 +43,15 @@ if(Python_Interpreter_FOUND)
     COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/python_xor_net.py
     COMMENT "Running python_xor_net.py with ${Python_EXECUTABLE}"
   )
-  
+
+  set(KERAS_NET_PYTHON "keras_xor_example")
+  add_custom_target(${KERAS_NET_PYTHON})
+
+  add_custom_command(
+    TARGET ${KERAS_NET_PYTHON}
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/keras_xor_example.py
+    COMMENT "Running keras_xor_example.py with ${Python_EXECUTABLE}"
+  )
 endif()
 
 find_package(GSL)
