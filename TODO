@@ -1,18 +1,22 @@
+--- When ? idk ---
 - Build matrix ADT [X]
 --- 2023-07-23 ---
 - Test all the componets [X]
------ SUPER IMPORTNAT ----
-- Do the math for complex numbers back prop [ ]
-- Build with complex parameters [ ]
+
+----- MAIN OBJECTS -----
+- Do the math for complex numbers back propagation [ ]
+- Build an mat of complex parameters [ ]
+
 --- 2024-01-05 ---
 - Refactor the mat component [X]
-- Design an in layer to support input of none one dimension [ ]
 - Build an struct shape and contained in the mat object [X]
 - Create a better version of the print of the matrix [X]
-- Build utilites to build matrices fast from files [ ]
-- Inherit the matrix class to build a simple array class [], NO
-- Try to do the mat mul by porint the matrices to sparse matrices and
-  see if it is more faster [ ]
-- Try to get that 2.9 of velocity in the mat mul [ ]
-- Build different mat prints [ ]
-- Do more template in utils mat [ ]
+- Build utilites to build matrices files [ ]
+- Try to get that 2.9s at mat mul 1000x1000 [ ]
+- Build simple mat prints [ ]
+
+----- IMPORTANT -----
+- Build the Model object, ---> batch size <--- super important [ ]
+- Build the optimizer dependency and add the SGD, GD optimizer [ ]
+- Separate backprop algorithm from the classes layers and weights [ ]
+- Change the name of the cost functions to loss functions and add more loss functions [ ]

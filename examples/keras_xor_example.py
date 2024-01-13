@@ -1,10 +1,11 @@
+# A simple experiment with keras to see how perfoms in compare my lib
+
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import SGD
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_blobs
-
 
 
 X, y = make_blobs(n_samples = 200, n_features = 2, cluster_std=.1,

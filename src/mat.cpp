@@ -523,8 +523,7 @@ Mat<T> &cnet::mathops::Mat<T>::rand(T a, T b)
 	random_device		 rd;
 	mt19937			 gen(rd());
 	uniform_real_distribution<> dis(a, b);
-
-#pragma omp parallel for collapse(2)
+	
 	for (size_t i = 0; i < shape_.rows; i++)
 		for (size_t j = 0; j < shape_.cols; j++)
 			mat_[i * shape_.cols + j] = dis(gen);

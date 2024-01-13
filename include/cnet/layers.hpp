@@ -150,9 +150,9 @@ namespace cnet::layers {
 		// a = f(z), where z = b + w_1 * i_1 + ... + w_n * i_n + ..., f is the activation function,
 		// dE = d(e)/d(a)
 		// I is the input from which we want its derivate, basically d(e)/d(i_k)
-		Error get_derror_dinput(const Error &dE) const;
-		Mat<float32> get_derror_dinput(const Mat<float32> &dE) const;
-		Mat<float64> get_derror_dinput(const Mat<float64> &dE) const;
+		Error get_derror_dinput(const Error &dA) const;
+		Mat<float32> get_derror_dinput(const Mat<float32> &dA) const;
+		Mat<float64> get_derror_dinput(const Mat<float64> &dA) const;
 		
 		// FeedForward
 		Output operator()(const Input &X) override;
