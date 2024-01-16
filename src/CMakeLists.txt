@@ -1,17 +1,22 @@
 project(${CMAKE_PROJECT_NAME})
 
-# file(GLOB SOURCES
-#   ${SRC_DIR}/*.cpp
-# )
+set(INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/include)
+set(CNET_UTILS_LIB cnet_utils)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
-  utils_mat.cpp strassen.cpp mat.cpp variable.cpp afuncs.cpp cfuncs.cpp backprop.cpp weights.cpp layers.cpp
+  mat.cpp variable.cpp activation.cpp loss.cpp backprop.cpp weights.cpp layers.cpp
 )
 
-# mat.cpp afunc.cpp cost.cpp layer.cpp
+set(CNET_UTILS_LIB cnet_utils)
+add_subdirectory(utils)
+target_link_libraries(${CMAKE_PROJECT_NAME}
+  PRIVATE ${CNET_UTILS_LIB}
+)
 
-# Try to compile to suppoert AVX512F
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -mavx -march=native)
+# Compile to support AVX
+target_compile_options(${CMAKE_PROJECT_NAME}
+  PRIVATE -mavx -march=native
+)
 
 find_package(OpenMP REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME}
@@ -29,5 +34,10 @@ install(TARGETS ${CMAKE_PROJECT_NAME}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
+# Installing the header files
+install(DIRECTORY ${INCLUDE_DIR}/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/
+  FILES_MATCHING PATTERN "*.hpp"
+)
 
 

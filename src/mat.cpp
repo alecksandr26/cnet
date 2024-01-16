@@ -1,8 +1,9 @@
+#include "avx.hpp"
+#include "raw_mat.hpp"
+#include "strassen.hpp"
+
 #include "cnet/dtypes.hpp"
 #include "cnet/mat.hpp"
-#include "cnet/utils_mat.hpp"
-#include "cnet/utils_avx.hpp"
-#include "cnet/strassen.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -359,8 +360,8 @@ Mat<T> cnet::mathops::Mat<T>::operator*(const Mat<T> &B) const
 	T *padded_mat_a, *padded_mat_b, *padded_mat_c;
 	
 	size_t n = pad_size(shape_.rows, shape_.cols, B.get_rows(), B.get_cols());
-	padded_mat_a = pad_mat(*this, n);
-	padded_mat_b = pad_mat(B, n);
+	padded_mat_a = pad_mat(mat_, shape_.rows, shape_.cols, n);
+	padded_mat_b = pad_mat(B.get_allocated_mat(), B.get_rows(), B.get_cols(), n);
 
 	padded_mat_c = (T *) alloc_mem_matrix(n * n, sizeof(T));
 	
@@ -395,8 +396,8 @@ void cnet::mathops::Mat<T>::operator*=(const Mat<T> &B)
 	T *padded_mat_a, *padded_mat_b, *padded_mat_c;
 	
 	size_t n = pad_size(shape_.rows, shape_.cols, B.get_rows(), B.get_cols());
-	padded_mat_a = pad_mat(*this, n);
-	padded_mat_b = pad_mat(B, n);
+	padded_mat_a = pad_mat(mat_, shape_.rows, shape_.cols, n);
+	padded_mat_b = pad_mat(B.get_allocated_mat(), B.get_rows(), B.get_cols(), n);
 
 	padded_mat_c = (T *) alloc_mem_matrix(n * n, sizeof(T));
 	

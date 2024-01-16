@@ -38,13 +38,11 @@ message("-- CXX Compiler Flags: ${CMAKE_CXX_FLAGS}")
 
 include(GNUInstallDirs)
 
-set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 set(EXAMPLE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/examples)
 
 add_subdirectory(${SRC_DIR}/)
-add_subdirectory(${INCLUDE_DIR}/)
 
 # To build the tests
 if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE STREQUAL "Release")

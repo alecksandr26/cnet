@@ -2,21 +2,20 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "cnet/dtypes.hpp"
-#include "cnet/utils_avx.hpp"
-#include "cnet/utils_mat.hpp"
+
+#include "avx.hpp"
+#include "raw_mat.hpp"
+#include "strassen.hpp"
 
 #include <immintrin.h>
 #include <omp.h>
 
-using namespace cnet::dtypes;
-using namespace cnet::mathops::utils;
 using namespace std;
+using namespace cnet::mathops::utils;
 
-void  *cnet::mathops::utils::alloc_mem_matrix(size_t n, size_t item_size)
+void *cnet::mathops::utils::alloc_mem_matrix(size_t n, size_t item_size)
 {
 	assert(n && item_size);
-	
 	return aligned_alloc(item_size, n * item_size);
 }
 
@@ -27,9 +26,9 @@ void cnet::mathops::utils::free_mem_matrix(void *ptr)
 }
 
 template<typename T>
-void cnet::mathops::utils::cp_raw_mat(T *dst_mat, T *src_mat,
-			     size_t rows, size_t cols,
-			     size_t dst_cols, size_t src_cols)
+void cnet::mathops::utils::cp_raw_mat(T *dst_mat, const T *src_mat,
+				      size_t rows, size_t cols,
+				      size_t dst_cols, size_t src_cols)
 {
 	assert(dst_mat && src_mat);
 
@@ -55,7 +54,7 @@ void cnet::mathops::utils::cp_raw_mat(T *dst_mat, T *src_mat,
 }
 
 template<>
-void cnet::mathops::utils::mul_sqr_raw_mat(float64 *A, float64 *B, float64 *C, std::size_t n)
+void cnet::mathops::utils::mul_sqr_raw_mat(const double *A, const double *B, double *C, std::size_t n)
 {
 	size_t nb =  (n + 3) / 4;
 
@@ -89,7 +88,7 @@ void cnet::mathops::utils::mul_sqr_raw_mat(float64 *A, float64 *B, float64 *C, s
 }
 
 template<>
-void cnet::mathops::utils::mul_sqr_raw_mat(float32 *A, float32 *B, float32 *C, std::size_t n)
+void cnet::mathops::utils::mul_sqr_raw_mat(const float *A, const float *B, float *C, std::size_t n)
 {
 	size_t nb =  (n + 7) / 8;
 
@@ -160,7 +159,7 @@ void cnet::mathops::utils::init_raw_mat(T *A, size_t rows, size_t cols, T init_v
 
 
 template<typename T>
-void cnet::mathops::utils::add_raw_mat(T *A, T *B, size_t rows, size_t cols)
+void cnet::mathops::utils::add_raw_mat(T *A, const T *B, size_t rows, size_t cols)
 {
 	size_t n	    = rows * cols;
 	size_t n_ite_8 = n - (n % 8);
@@ -196,7 +195,7 @@ void cnet::mathops::utils::add_raw_mat(T *A, T *B, size_t rows, size_t cols)
 }
 
 template<typename T>
-void cnet::mathops::utils::sub_raw_mat(T *A, T *B, size_t rows, size_t cols)
+void cnet::mathops::utils::sub_raw_mat(T *A, const T *B, size_t rows, size_t cols)
 {
 	size_t n	    = rows * cols;
 	size_t n_ite_8 = n - (n % 8);
@@ -232,7 +231,7 @@ void cnet::mathops::utils::sub_raw_mat(T *A, T *B, size_t rows, size_t cols)
 }
 
 template<typename T>
-void cnet::mathops::utils::hardmard_mul_raw_mat(T *A, T *B, size_t rows, size_t cols)
+void cnet::mathops::utils::hardmard_mul_raw_mat(T *A, const T *B, size_t rows, size_t cols)
 {
 	size_t n	    = rows * cols;
 	size_t n_ite_8 = n - (n % 8);
@@ -304,13 +303,13 @@ void cnet::mathops::utils::scalar_mul_raw_mat(T *A, T b, size_t rows, size_t col
 }
 
 template<>
-float64 cnet::mathops::utils::grand_sum_raw_mat(float64 *A, size_t rows, size_t cols)
+double cnet::mathops::utils::grand_sum_raw_mat(const double *A, size_t rows, size_t cols)
 {
 	size_t n	    = rows * cols;
 	size_t n_ite_8 = n - (n % 8);
 	size_t n_ite_4 = n - (n % 4);
 	
-	float64 res = 0.0;
+	double res = 0.0;
 	vec4d vec4 = _mm256_setzero_pd();
 	
 	switch (n) {
@@ -344,13 +343,13 @@ float64 cnet::mathops::utils::grand_sum_raw_mat(float64 *A, size_t rows, size_t 
 }
 
 template<>
-float32 cnet::mathops::utils::grand_sum_raw_mat(float32 *A, size_t rows, size_t cols)
+float cnet::mathops::utils::grand_sum_raw_mat(const float *A, size_t rows, size_t cols)
 {
 	size_t n	    = rows * cols;
 	size_t n_ite_8 = n - (n % 8);
 	size_t n_ite_4 = n - (n % 4);
 
-	float32 res = 0.0;
+	float res = 0.0;
 
 	vec8f vec8 = _mm256_setzero_ps();
 	vec4f vec4 = _mm_setzero_ps();
@@ -385,19 +384,19 @@ float32 cnet::mathops::utils::grand_sum_raw_mat(float32 *A, size_t rows, size_t 
 	return res;
 }
 
-template void cnet::mathops::utils::cp_raw_mat(float64 *dst_mat, float64 *src_mat,
+template void cnet::mathops::utils::cp_raw_mat(double *dst_mat, const double *src_mat,
 					       size_t rows, size_t cols,
 					       size_t dst_cols, size_t src_cols);
-template void cnet::mathops::utils::cp_raw_mat(float32 *dst_mat, float32 *src_mat,
+template void cnet::mathops::utils::cp_raw_mat(float *dst_mat, const float *src_mat,
 					       size_t rows, size_t cols,
 					       size_t dst_cols, size_t src_cols);
-template void cnet::mathops::utils::init_raw_mat(float64 *A, size_t rows, size_t cols, float64 init_val);
-template void cnet::mathops::utils::init_raw_mat(float32 *A, size_t rows, size_t cols, float32 init_val);
-template void cnet::mathops::utils::add_raw_mat(float64 *A, float64 *B, size_t rows, size_t cols);
-template void cnet::mathops::utils::add_raw_mat(float32 *A, float32 *B, size_t rows, size_t cols);
-template void cnet::mathops::utils::sub_raw_mat(float64 *A, float64 *B, size_t rows, size_t cols);
-template void cnet::mathops::utils::sub_raw_mat(float32 *A, float32 *B, size_t rows, size_t cols);
-template void cnet::mathops::utils::hardmard_mul_raw_mat(float64 *A, float64 *B, size_t rows, size_t cols);
-template void cnet::mathops::utils::hardmard_mul_raw_mat(float32 *A, float32 *B, size_t rows, size_t cols);
-template void cnet::mathops::utils::scalar_mul_raw_mat(float64 *A, float64 b, size_t rows, size_t cols);
-template void cnet::mathops::utils::scalar_mul_raw_mat(float32 *A, float32 b, size_t rows, size_t cols);
+template void cnet::mathops::utils::init_raw_mat(double *A, size_t rows, size_t cols, double init_val);
+template void cnet::mathops::utils::init_raw_mat(float *A, size_t rows, size_t cols, float init_val);
+template void cnet::mathops::utils::add_raw_mat(double *A, const double *B, size_t rows, size_t cols);
+template void cnet::mathops::utils::add_raw_mat(float *A, const float *B, size_t rows, size_t cols);
+template void cnet::mathops::utils::sub_raw_mat(double *A, const double *B, size_t rows, size_t cols);
+template void cnet::mathops::utils::sub_raw_mat(float *A, const float *B, size_t rows, size_t cols);
+template void cnet::mathops::utils::hardmard_mul_raw_mat(double *A, const double *B, size_t rows, size_t cols);
+template void cnet::mathops::utils::hardmard_mul_raw_mat(float *A, const float *B, size_t rows, size_t cols);
+template void cnet::mathops::utils::scalar_mul_raw_mat(double *A, double b, size_t rows, size_t cols);
+template void cnet::mathops::utils::scalar_mul_raw_mat(float *A, float b, size_t rows, size_t cols);

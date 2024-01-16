@@ -3,7 +3,7 @@
 
 #include "cnet/mat.hpp"
 #include "cnet/variable.hpp"
-#include "cnet/afuncs.hpp"
+#include "cnet/activation.hpp"
 #include "cnet/weights.hpp"
 #include "cnet/layers.hpp"
 
@@ -13,7 +13,7 @@ using namespace cnet;
 using namespace mathops;
 using namespace variable;
 using namespace layers;
-using namespace afuncs;
+using namespace activation;
 using namespace weights;
 
 // Base class to construct the ohter layers

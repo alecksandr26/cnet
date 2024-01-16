@@ -17,14 +17,14 @@
 #include "dtypes.hpp"
 #include "mat.hpp"
 #include "variable.hpp"
-#include "afuncs.hpp"
+#include "activation.hpp"
 #include "weights.hpp"
 
 namespace cnet::layers {
 	using namespace dtypes;
 	using namespace mathops;
 	using namespace variable;
-	using namespace afuncs;
+	using namespace activation;
 	using namespace weights;
 	
 	

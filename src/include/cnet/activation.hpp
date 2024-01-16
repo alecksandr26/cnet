@@ -7,14 +7,14 @@
   @license This project is released under the MIT License
 */
 
-#ifndef ACTIVATION_FUNCS_INCLUDED
-#define ACTIVATION_FUNCS_INCLUDED
+#ifndef ACTIVATION_INCLUDED
+#define ACTIVATION_INCLUDED
 
 #include <functional>
 
 #include "variable.hpp"
 
-namespace cnet::afuncs {
+namespace cnet::activation {
 	using namespace variable;
 	
 	template<typename T>

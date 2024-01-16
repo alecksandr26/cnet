@@ -28,12 +28,12 @@ add_executable(test_variable
   test_variable.cpp
 )
 
-add_executable(test_afuncs
-  test_afuncs.cpp
+add_executable(test_activation
+  test_activation.cpp
 )
 
-add_executable(test_cfuncs
-  test_cfuncs.cpp
+add_executable(test_loss
+  test_loss.cpp
 )
 
 add_executable(test_layer
@@ -57,13 +57,13 @@ target_link_libraries(test_variable
   GTest::gtest_main
 )
 
-target_link_libraries(test_afuncs
+target_link_libraries(test_activation
   PRIVATE
   ${CMAKE_PROJECT_NAME}
   GTest::gtest_main
 )
 
-target_link_libraries(test_cfuncs
+target_link_libraries(test_loss
   PRIVATE
   ${CMAKE_PROJECT_NAME}
   GTest::gtest_main
@@ -84,8 +84,8 @@ target_link_libraries(test_layer
 include(GoogleTest)
 gtest_discover_tests(test_mat)
 gtest_discover_tests(test_variable)
-gtest_discover_tests(test_afuncs)
-gtest_discover_tests(test_cfuncs)
+gtest_discover_tests(test_activation)
+gtest_discover_tests(test_loss)
 gtest_discover_tests(test_layer)
 
 # gtest_discover_tests(test_model)
@@ -93,12 +93,12 @@ gtest_discover_tests(test_layer)
 # include(CTest)
 
 # add_executable(test_mat ${CMAKE_CURRENT_SOURCE_DIR}/test/test_mat.cpp)
-# add_executable(test_afuncs ${CMAKE_CURRENT_SOURCE_DIR}/test/test_afunc.cpp)
+# add_executable(test_activation ${CMAKE_CURRENT_SOURCE_DIR}/test/test_afunc.cpp)
 # add_executable(test_layer ${CMAKE_CURRENT_SOURCE_DIR}/test/test_layer.cpp)
 # add_executable(test_ann ${CMAKE_CURRENT_SOURCE_DIR}/test/test_ann.cpp)
 
 # target_link_libraries(test_mat cnet)
-# target_link_libraries(test_afuncs cnet)
+# target_link_libraries(test_activation cnet)
 # target_link_libraries(test_layer cnet)
 # target_link_libraries(test_ann cnet)
 
@@ -111,7 +111,7 @@ gtest_discover_tests(test_layer)
 #   --show-leak-kinds=all
 #   --max-stackframe=62179200 ./test_mat)
 
-# add_test(NAME test_afuncs
+# add_test(NAME test_activation
 #   COMMAND valgrind
 #   --error-exitcode=1
 #   --leak-check=full

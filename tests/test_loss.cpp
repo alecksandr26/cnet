@@ -6,14 +6,15 @@
 #include "cnet/dtypes.hpp"
 #include "cnet/mat.hpp"
 #include "cnet/variable.hpp"
-#include "cnet/cfuncs.hpp"
+#include "cnet/activation.hpp"
+#include "cnet/loss.hpp"
 
 using namespace std;
 using namespace cnet;
 using namespace dtypes;
 using namespace mathops;
 using namespace variable;
-using namespace cfuncs;
+using namespace loss;
 
 
 TEST(TestCostFloat32, TestMse)

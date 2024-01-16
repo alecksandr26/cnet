@@ -1,8 +1,7 @@
-
 #include "cnet/dtypes.hpp"
 #include "cnet/mat.hpp"
 #include "cnet/variable.hpp"
-#include "cnet/cfuncs.hpp"
+#include "cnet/loss.hpp"
 
 #include <cstddef>
 
@@ -11,10 +10,10 @@ using namespace cnet;
 using namespace dtypes;
 using namespace mathops;
 using namespace variable;
-using namespace cfuncs;
+using namespace loss;
 
 template<typename T>
-T cnet::cfuncs::Mse(const T *A, const T *Y, size_t N)
+T cnet::loss::Mse(const T *A, const T *Y, size_t N)
 {
 	if (N == 0)
 		throw invalid_argument("invalid argument: Invalid Empty set");
@@ -26,7 +25,7 @@ T cnet::cfuncs::Mse(const T *A, const T *Y, size_t N)
 }
 
 template<>
-Var cnet::cfuncs::Mse(const Var *A, const Var *Y, size_t N)
+Var cnet::loss::Mse(const Var *A, const Var *Y, size_t N)
 {
 	if (N == 0)
 		throw invalid_argument("invalid argument: Invalid Empty set");
@@ -62,17 +61,17 @@ Var cnet::cfuncs::Mse(const Var *A, const Var *Y, size_t N)
 }
 
 template<typename T>
-T cnet::cfuncs::MseDerivate(const T &A, const T &Y, std::size_t N)
+T cnet::loss::MseDerivate(const T &A, const T &Y, std::size_t N)
 {
 	if (N == 0)
 		throw invalid_argument("invalid argument: Invalid Empty set");
 	return (A - Y) * (2.0 / N);
 }
 
-template Mat<float32> cnet::cfuncs::Mse(const Mat<float32> *A, const Mat<float32> *Y, size_t N);
-template Mat<float64> cnet::cfuncs::Mse(const Mat<float64> *A, const Mat<float64> *Y, size_t N);
+template Mat<float32> cnet::loss::Mse(const Mat<float32> *A, const Mat<float32> *Y, size_t N);
+template Mat<float64> cnet::loss::Mse(const Mat<float64> *A, const Mat<float64> *Y, size_t N);
 
-template Mat<float32> cnet::cfuncs::MseDerivate(const Mat<float32> &A, const Mat<float32> &Y, size_t N);
-template Mat<float64> cnet::cfuncs::MseDerivate(const Mat<float64> &A, const Mat<float64> &Y, size_t N);
+template Mat<float32> cnet::loss::MseDerivate(const Mat<float32> &A, const Mat<float32> &Y, size_t N);
+template Mat<float64> cnet::loss::MseDerivate(const Mat<float64> &A, const Mat<float64> &Y, size_t N);
 
-template Var cnet::cfuncs::MseDerivate(const Var &A, const Var &Y, size_t N);
+template Var cnet::loss::MseDerivate(const Var &A, const Var &Y, size_t N);

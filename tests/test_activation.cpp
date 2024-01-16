@@ -12,14 +12,14 @@
 #include "cnet/dtypes.hpp"
 #include "cnet/mat.hpp"
 #include "cnet/variable.hpp"
-#include "cnet/afuncs.hpp"
+#include "cnet/activation.hpp"
 
 using namespace std;
 using namespace cnet;
 using namespace dtypes;
 using namespace mathops;
 using namespace variable;
-using namespace afuncs;
+using namespace activation;
 
 TEST(TestAFuncFloat32, TestLinear)
 {

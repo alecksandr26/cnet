@@ -1,5 +1,6 @@
 --- When ? idk ---
 - Build matrix ADT [X]
+
 --- 2023-07-23 ---
 - Test all the componets [X]
 
@@ -15,8 +16,13 @@
 - Try to get that 2.9s at mat mul 1000x1000 [ ]
 - Build simple mat prints [ ]
 
+
 ----- IMPORTANT -----
 - Build the Model object, ---> batch size <--- super important [ ]
 - Build the optimizer dependency and add the SGD, GD optimizer [ ]
 - Separate backprop algorithm from the classes layers and weights [ ]
 - Change the name of the cost functions to loss functions and add more loss functions [ ]
+
+--- 2024-01-15 ---
+- Separate in folders the different modules and build the respect libs [X]
+- Build an structure of Rawmat [ ]

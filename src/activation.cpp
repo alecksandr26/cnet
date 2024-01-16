@@ -1,9 +1,10 @@
+#include "avx.hpp"
+#include "raw_mat.hpp"
+
 #include "cnet/dtypes.hpp"
 #include "cnet/variable.hpp"
 #include "cnet/mat.hpp"
-#include "cnet/utils_avx.hpp"
-#include "cnet/utils_mat.hpp"
-#include "cnet/afuncs.hpp"
+#include "cnet/activation.hpp"
 
 #include <cstddef>
 #include <iostream>
@@ -18,8 +19,7 @@
 using namespace std;
 using namespace cnet;
 using namespace dtypes;
-
-using namespace afuncs;
+using namespace activation;
 using namespace mathops;
 using namespace utils;
 using namespace variable;
@@ -36,7 +36,7 @@ struct StLinear {
 };
 
 template<typename T>
-T cnet::afuncs::Linear(const T &X)
+T cnet::activation::Linear(const T &X)
 {
 	return StLinear<T>::Linear(X);
 }
@@ -64,7 +64,7 @@ Var StLinearDerivate<Var>::LinearDerivate(const Var &X)
 }
 
 template<typename T>
-T cnet::afuncs::LinearDerivate(const T &X)
+T cnet::activation::LinearDerivate(const T &X)
 {
 	return StLinearDerivate<T>::LinearDerivate(X);
 }
@@ -192,7 +192,7 @@ Var StSigmoid<Var>::Sigmoid(const Var &X)
 }
 
 template<typename T>
-T cnet::afuncs::Sigmoid(const T &X)
+T cnet::activation::Sigmoid(const T &X)
 {
 	return StSigmoid<T>::Sigmoid(X);
 }
@@ -230,7 +230,7 @@ Var StSigmoidDerivate<Var>::SigmoidDerivate(const Var &X)
 
 
 template<typename T>
-T cnet::afuncs::SigmoidDerivate(const T &X)
+T cnet::activation::SigmoidDerivate(const T &X)
 {
 	return StSigmoidDerivate<T>::SigmoidDerivate(X);
 }
@@ -314,7 +314,7 @@ Var StRelu<Var>::Relu(const Var &X)
 }
 
 template<typename T>
-T cnet::afuncs::Relu(const T &X)
+T cnet::activation::Relu(const T &X)
 {
 	return StRelu<T>::Relu(X);
 }
@@ -328,61 +328,61 @@ struct StReluDerivate {
 };
 
 template<typename T>
-T cnet::afuncs::ReluDerivate(const T &X)
+T cnet::activation::ReluDerivate(const T &X)
 {
 	return StReluDerivate<T>::ReluDerivate(X);
 }
 
-template Mat<float32> cnet::afuncs::Linear(const Mat<float32> &X);
-template Mat<float64> cnet::afuncs::Linear(const Mat<float64> &X);
-template Var cnet::afuncs::Linear(const Var &X);
+template Mat<float32> cnet::activation::Linear(const Mat<float32> &X);
+template Mat<float64> cnet::activation::Linear(const Mat<float64> &X);
+template Var cnet::activation::Linear(const Var &X);
 
 template class StLinear<Mat<float32>>;
 template class StLinear<Mat<float64>>;
 template class StLinear<Var>;
 
-template Mat<float32> cnet::afuncs::LinearDerivate(const Mat<float32> &X);
-template Mat<float64> cnet::afuncs::LinearDerivate(const Mat<float64> &X);
-template Var cnet::afuncs::LinearDerivate(const Var &X);
+template Mat<float32> cnet::activation::LinearDerivate(const Mat<float32> &X);
+template Mat<float64> cnet::activation::LinearDerivate(const Mat<float64> &X);
+template Var cnet::activation::LinearDerivate(const Var &X);
 
 template class StLinearDerivate<Mat<float32>>;
 template class StLinearDerivate<Mat<float64>>;
 template class StLinearDerivate<Var>;
 
-template Mat<float32> cnet::afuncs::Sigmoid(const Mat<float32> &X);
-template Mat<float64> cnet::afuncs::Sigmoid(const Mat<float64> &X);
-template Var cnet::afuncs::Sigmoid(const Var &X);
+template Mat<float32> cnet::activation::Sigmoid(const Mat<float32> &X);
+template Mat<float64> cnet::activation::Sigmoid(const Mat<float64> &X);
+template Var cnet::activation::Sigmoid(const Var &X);
 
 template class StSigmoid<Mat<float32>>;
 template class StSigmoid<Mat<float64>>;
 template class StSigmoid<Var>;
 
-template Mat<float32> cnet::afuncs::SigmoidDerivate(const Mat<float32> &X);
-template Mat<float64> cnet::afuncs::SigmoidDerivate(const Mat<float64> &X);
-template Var cnet::afuncs::SigmoidDerivate(const Var &X);
+template Mat<float32> cnet::activation::SigmoidDerivate(const Mat<float32> &X);
+template Mat<float64> cnet::activation::SigmoidDerivate(const Mat<float64> &X);
+template Var cnet::activation::SigmoidDerivate(const Var &X);
 
 template class StSigmoidDerivate<Mat<float32>>;
 template class StSigmoidDerivate<Mat<float64>>;
 template class StSigmoidDerivate<Var>;
 
-template Mat<float32> cnet::afuncs::Relu(const Mat<float32> &X);
-template Mat<float64> cnet::afuncs::Relu(const Mat<float64> &X);
-template Var cnet::afuncs::Relu(const Var &X);
+template Mat<float32> cnet::activation::Relu(const Mat<float32> &X);
+template Mat<float64> cnet::activation::Relu(const Mat<float64> &X);
+template Var cnet::activation::Relu(const Var &X);
 
 template class StRelu<Mat<float32>>;
 template class StRelu<Mat<float64>>;
 template class StRelu<Var>;
 
-template Mat<float32> cnet::afuncs::ReluDerivate(const Mat<float32> &X);
-template Mat<float64> cnet::afuncs::ReluDerivate(const Mat<float64> &X);
-template Var cnet::afuncs::ReluDerivate(const Var &X);
+template Mat<float32> cnet::activation::ReluDerivate(const Mat<float32> &X);
+template Mat<float64> cnet::activation::ReluDerivate(const Mat<float64> &X);
+template Var cnet::activation::ReluDerivate(const Var &X);
 
 template class StReluDerivate<Mat<float32>>;
 template class StReluDerivate<Mat<float64>>;
 template class StReluDerivate<Var>;
 
 template<class T>
-void cnet::afuncs::Afunc<T>::alloc_afunc(const string &afunc_name)
+void cnet::activation::Afunc<T>::alloc_afunc(const string &afunc_name)
 {
 	static unordered_map<string, function<T(const T &)>> afunc_map = {
 		{"Linear", StLinear<T>::Linear},
@@ -407,9 +407,9 @@ void cnet::afuncs::Afunc<T>::alloc_afunc(const string &afunc_name)
 	afunc_derivate_ = it2->second;
 }
 
-template class cnet::afuncs::Afunc<Mat<float32>>;
-template class cnet::afuncs::Afunc<Mat<float64>>;
-template class cnet::afuncs::Afunc<Var>;
+template class cnet::activation::Afunc<Mat<float32>>;
+template class cnet::activation::Afunc<Mat<float64>>;
+template class cnet::activation::Afunc<Var>;
 
 template static void sigmoid_helper(const Mat<float64> &X, Mat<float64> &Y);
 template static void sigmoid_helper(const Mat<float32> &X, Mat<float32> &Y);

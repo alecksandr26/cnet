@@ -1,11 +1,11 @@
-#ifndef COST_FUNC_INCLUDED
-#define COST_FUNC_INCLUDED
+#ifndef LOSS_INCLUDED
+#define LOSS_INCLUDED
 
 #include <cstddef>
 
 // #include "variable.hpp"
 
-namespace cnet::cfuncs {
+namespace cnet::loss {
 	// using namespace variable;
 	// class Error : public Var {
 	// 	// Nothing here yet

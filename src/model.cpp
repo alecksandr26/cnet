@@ -1,5 +1,4 @@
 #include "cnet/model.hpp"
-
 #include "cnet/layer.hpp"
 #include "cnet/mat.hpp"
 

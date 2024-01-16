@@ -12,20 +12,19 @@
 
 #include "cnet/dtypes.hpp"
 #include "cnet/variable.hpp"
-#include "cnet/afuncs.hpp"
+#include "cnet/activation.hpp"
 #include "cnet/layers.hpp"
-#include "cnet/cfuncs.hpp"
+#include "cnet/loss.hpp"
 
 #include <fenv.h>
-
-
 
 using namespace std;
 using namespace cnet;
 using namespace variable;
-using namespace cfuncs;
-using namespace afuncs;
+using namespace activation;
+using namespace loss;
 using namespace layers;
+
 
 TEST(LayerTestFloat32, DenseLayerIinit)
 {
