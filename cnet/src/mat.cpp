@@ -1,6 +1,6 @@
-#include "avx.hpp"
-#include "raw_mat.hpp"
-#include "strassen.hpp"
+#include "utils/avx.hpp"
+#include "utils/raw_mat.hpp"
+#include "utils/strassen.hpp"
 
 #include "cnet/dtypes.hpp"
 #include "cnet/mat.hpp"

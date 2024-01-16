@@ -1,5 +1,5 @@
-#include "avx.hpp"
-#include "raw_mat.hpp"
+#include "utils/avx.hpp"
+#include "utils/raw_mat.hpp"
 
 #include "cnet/dtypes.hpp"
 #include "cnet/backprop.hpp"

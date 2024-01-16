@@ -2,10 +2,9 @@
 #include <cstdlib>
 #include <cstring>
 
-
-#include "avx.hpp"
-#include "raw_mat.hpp"
-#include "strassen.hpp"
+#include "utils/avx.hpp"
+#include "utils/raw_mat.hpp"
+#include "utils/strassen.hpp"
 
 #include <immintrin.h>
 #include <omp.h>

@@ -13,7 +13,6 @@ FetchContent_Declare(
 # https://github.com/google/googletest/issues/3486
 option(INSTALL_GTEST "Enable installation of googletest." OFF)
 
-
 # Make it available
 FetchContent_MakeAvailable(googletest)
 add_library(GTest::GTest INTERFACE IMPORTED)

@@ -1,0 +1,8 @@
+project(${CMAKE_PROJECT_NAME})
+
+set(CNET_UTILS_LIB cnet_utils)
+set(CNET_UTILS_INCLUDE_DIR ${CMAKE_CURRENT_LIST_DIR}/include)
+set(CNET_UTILS_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
+
+add_subdirectory(${CNET_UTILS_SRC_DIR})
+
