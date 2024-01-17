@@ -11,6 +11,6 @@ ComplexNet is an advanced and flexible artificial neural network framework desig
 
 * OpenMP (OMP) Optimization: The library employs OpenMP to parallelize matrix multiplication, further optimizing computation on multi-core systems.
 
-## References
+## Links
 * Devansh. (2022, November 17). Improve neural networks by using complex numbers - geek culture - medium. Geek Culture. https://medium.com/geekculture/improve-neural-networks-by-using-complex-numbers-5e142b8931e6
 * Preprint, A., Ko, M., Panchal, U. K., Andrade-Loarca, H., & Mendez-Vazquez, A. (n.d.). Coshnet: A hybrid complex valued neural network using shearlets. Arxiv.org. Retrieved January 17, 2024, from http://arxiv.org/abs/2208.06882
