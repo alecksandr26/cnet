@@ -3,7 +3,7 @@
 ComplexNet is an advanced and flexible artificial neural network framework designed to handle complex-valued parameters. Unlike traditional real-valued neural networks, CNet explores the idea of utilizing complex numbers in the field of machine learning. This library is currently a work in progress, with ongoing development to harness the efficiency
 
 ## Features
-* Complex-Valued Parameters: CNet supports complex numbers as parameters, allowing for more expressive and nuanced representations in neural networks.
+* ~~Complex-Valued Parameters: CNet supports complex numbers as parameters, allowing for more expressive and nuanced representations in neural networks.~~ Not yet :(.
 
 * Strassen Algorithm: The library leverages the Strassen algorithm for matrix multiplication, optimizing the computational efficiency of complex-valued operations.
 
