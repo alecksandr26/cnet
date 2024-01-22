@@ -26,3 +26,7 @@
 --- 2024-01-15 ---
 - Separate in folders the different modules and build the respect libs [X]
 - Build an structure of Rawmat [ ]
+
+--- 2024-01-21 ---
+- Prepare Build a custum allocator for the matrices, read this doc https://indiegamedev.net/2022/03/27/custom-c20-memory-allocators-for-stl-containers/
+  not sure yet if it is necessary for the project [ ]
