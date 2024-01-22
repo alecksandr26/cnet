@@ -1,5 +1,5 @@
 /*
-  @file layers.hpp
+  @file layer.hpp
   @brief
   
   @author Erick Carrillo.
@@ -7,8 +7,8 @@
   @license This project is released under the MIT License
 */
 
-#ifndef LAYERS_INCLUDED
-#define LAYERS_INCLUDED
+#ifndef LAYER_INCLUDED
+#define LAYER_INCLUDED
 
 #include <cstddef>
 #include <functional>
@@ -20,13 +20,12 @@
 #include "activation.hpp"
 #include "weights.hpp"
 
-namespace cnet::layers {
+namespace cnet::layer {
 	using namespace dtypes;
 	using namespace mathops;
 	using namespace variable;
 	using namespace activation;
 	using namespace weights;
-	
 	
 	// These objects inputs and outpus are thinked to be just notation and be matrices as n x 1 form
 	class Input : public Var {
@@ -75,19 +74,21 @@ namespace cnet::layers {
 			return os;
 		}
 	};
+	
 
 	class Error : public Var {
 		// Nothing necessary here yet
 	};
 
-	// The base class to construct the other layers
+	// The base class to construct the other layer, each layer must to have a unique datatype for
+	// the weights
 	class Layer {
 	public:
 		Layer(void);
 		~Layer(void);
 		Layer(bool trainable, Shape in, Shape out);
 		Layer(bool trainable, std::size_t in, std::size_t out);
-		Layer(bool trainable, Shape in, Shape out, CnetDtype dtype);
+		Layer(bool trajinable, Shape in, Shape out, CnetDtype dtype);
 		Layer(bool trainable, std::size_t in, std::size_t out, CnetDtype dtype);
 				
 		std::size_t get_in_size(void) const;
@@ -96,30 +97,57 @@ namespace cnet::layers {
 		Shape get_out_shape(void) const;
 		CnetDtype get_dtype(void) const;
 		bool is_built(void) const;
+		std::size_t get_num_params(void) const;
+		
+		// To compute the error for the previos layer
+		// a = f(z), where z = b + w_1 * i_1 + ... + w_n * i_n + ..., f is the activation function,
+		// dA = d(e)/d(a)
+		// I is the input from which we want its derivate, basically d(e)/d(i_k)
+		virtual Error get_derror_dinput(const Error &dA) const = 0;
+		virtual Mat<float32> get_derror_dinput(const Mat<float32> &dA) const = 0;
+		virtual Mat<float64> get_derror_dinput(const Mat<float64> &dA) const = 0;
 
-		// FeedForward
+		// FeedForward operation
 		virtual Output operator()(const Input &X) = 0;
 		virtual Mat<float32> operator()(const Mat<float32> &X) = 0;
 		virtual Mat<float64> operator()(const Mat<float64> &X) = 0;
 
-		// virtual Output operator()(const Input &X) const = 0; // Feedforward function
 		virtual Layer &build(std::size_t in_size) = 0;
 		virtual Layer &build(Shape in) = 0;
-
+		
 		// It may be will require rebuild 
 		Layer &set_in_size(std::size_t in_size);
 		Layer &set_in_shape(Shape shape);
+
+		// Develop now this function 
+		Weights *add_weights(CnetDtype dtype, Shape shape) const;
 		
 	protected:
 		bool built_, trainable_;
 		Shape in_, out_;
 		CnetDtype dtype_;
 	};
-	
+
+	// The type of layer that will require training
+	class TrainableLayer : public Layer {
+	public:
+		TrainableLayer(void);
+		~TrainableLayer(void);
+		
+		
+		// To fit the layer
+		virtual TrainableLayer &fit(const Error &dA, const Input &I, float64 lr) = 0;
+		virtual TrainableLayer &fit(const Mat<float32> &dA, const Mat<float32> &I, float64 lr) = 0;
+		virtual TrainableLayer &fit(const Mat<float64> &dA, const Mat<float64> &I, float64 lr) = 0;
+		
+	protected:
+		Weights kernel_, bias_;
+		Var Z_;
+	};
 	
 	// Dense layer it is a normal NN of the type Y = Act(W * X + B), where X is one dimension
 	// matrix
-	class Dense : public Layer {
+	class Dense : public TrainableLayer {
 	public:
 		constexpr static std::string default_weights_name = "Weights";
 		constexpr static std::string default_biases_name = "Biases";
@@ -141,18 +169,10 @@ namespace cnet::layers {
 		Shape get_biases_shape(void) const;
 		bool use_bias(void) const;
 		const std::string &get_afunc_name(void) const;
-		const Var &get_cmat_weights(void) const;
-		const Var &get_cmat_biases(void) const;
+		const Weights &get_cmat_weights(void) const;
+		const Weights &get_cmat_biases(void) const;
 		Weights &get_mat_weights(void);
 		Weights &get_mat_biases(void);
-
-		// To compute the error for the previos layer
-		// a = f(z), where z = b + w_1 * i_1 + ... + w_n * i_n + ..., f is the activation function,
-		// dE = d(e)/d(a)
-		// I is the input from which we want its derivate, basically d(e)/d(i_k)
-		Error get_derror_dinput(const Error &dA) const;
-		Mat<float32> get_derror_dinput(const Mat<float32> &dA) const;
-		Mat<float64> get_derror_dinput(const Mat<float64> &dA) const;
 		
 		// FeedForward
 		Output operator()(const Input &X) override;
@@ -173,11 +193,11 @@ namespace cnet::layers {
 		// Fit backpropagation:
 		// a = f(z), where z = b + w_1 * i_1 + ... + w_n * i_n + ..., f is the activation function,
 		// a is the actual neuron and i is the input
-		// dE = d(e)/d(a)
+		// dA = d(e)/d(a)
 		// I is the input of this layer
-		Dense &fit(const Error &dE, const Input &I, float64 lr);
-		Dense &fit(const Mat<float32> &dE, const Mat<float32> &I, float64 lr);
-		Dense &fit(const Mat<float64> &dE, const Mat<float64> &I, float64 lr);
+		Dense &fit(const Error &dA, const Input &I, float64 lr);
+		Dense &fit(const Mat<float32> &dA, const Mat<float32> &I, float64 lr);
+		Dense &fit(const Mat<float64> &dA, const Mat<float64> &I, float64 lr);
 			
 		friend std::ostream &operator<<(std::ostream& os, const Dense &L)
 		{
@@ -202,10 +222,7 @@ namespace cnet::layers {
 		bool use_bias_;
 		std::size_t units_;
 		std::string afunc_name_;
-		Weights W_, B_;
-		Var Z_;		
 		Afunc<Var> afunc_;
-
 	};
 }
 

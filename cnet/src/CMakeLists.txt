@@ -1,7 +1,7 @@
 project(${CMAKE_PROJECT_NAME})
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
-  mat.cpp variable.cpp activation.cpp loss.cpp backprop.cpp weights.cpp layers.cpp
+  mat.cpp variable.cpp activation.cpp loss.cpp backprop.cpp layer.cpp
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}

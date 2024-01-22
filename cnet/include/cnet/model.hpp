@@ -1,53 +1,57 @@
 #ifndef MODEL_INCLUDED
 #define MODEL_INCLUDED
 
-#include <memory>
+#include <cstddef>
 
-#include "cost.hpp"
+#include "dtypes.hpp"
+#include "mat.hpp"
 #include "layer.hpp"
+#include "loss.hpp"
+#include "optimizer.hpp"
 
-#define MAX_AMOUNT_OF_LAYERS 100
+namespace cnet::model {
+	using namespace dtypes;
+	using namespace mathops;
+	using namespace variable;
+	using namespace layers;
+	
+	class Model : public Layer {
+	public:
+		// Feedforward of the model
+		virtual mat<float32> operator()(const mat<float32> &X) = 0;
+		virtual mat<float64> operator()(const mat<float64> &X) = 0;
+		virtual Output operator()(const Input &X) = 0;
 
-namespace cnet {
-	namespace model {
-		class model {
-		public:
-			// To do feedforward of the model
-			template<typename T>
-			virtual mat<T> operator()(const mat<T> &X) = 0;
-			
-			// Back prop algorithm for the moment
-			virtual void fit(const mat<T> *X, const mat<T> *Y, std::size_t in_size,
-					 std::size_t epochs, double lr,
-					 const std::string &cfunc_name) = 0;
-
-			
-			std::size_t get_num_layers(void);
-			
-		protected:
-			layer::layer<T> **layers_;
-			std::size_t num_layers_;
-		};
+		virtual void compile(const std::string &loss_name);
 		
-		// I want to have a similar model as keras
+		// Back prop algorithm for the moment
+		virtual void fit(const mat<float32> *X, const mat<float32> *Y, std::size_t size,
+				 std::size_t epochs, float64 lr) = 0;
+		
+		virtual void fit(const mat<float64> *X, const mat<float64> *Y, std::size_t size,
+				 std::size_t epochs, float64 lr) = 0;
 
-		class sequential : public model {
-		public:
-			sequential(void);
-			~sequential(void);
+		virtual void fit(const mat<float64> *X, const mat<float64> *Y, std::size_t size,
+				 std::size_t epochs, float64 lr) = 0;
 
-			template<typename T>
-			sequential(std::initializer_list<layer::layer<T>> layers);
-			// void add(layer::layer<T> &layer);
-
-			template<typename T>
-			mat<T> operator()(const mat<T> &X) override;
-		private:
 			
-		};
+		std::size_t get_num_layers(void) const;
+			
+	protected:
+		std::size_t nlayers_;
+	};
+		
+	class Sequential : public Model {
+	public:
+		Sequential(void);
+		~Sequential(void);
+		
+		Sequential(std::initializer_list<Layer &> layers);
+	private:
 		
 	};
-};
+		
+}
 
 
 #endif

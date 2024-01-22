@@ -11,7 +11,7 @@ using namespace mathops;
 using namespace variable;
 using namespace weights;
 
-size_t cnet::weights::Weights::get_weights(void) const
+size_t cnet::weights::Weights::get_num_weights(void) const
 {
 	return get_rows() * get_cols();
 }
