@@ -169,22 +169,22 @@ size_t cnet::layer::Dense::get_units(void) const
 
 size_t cnet::layer::Dense::get_weights(void) const
 {
-	return W_.get_weights();
+	return kernel_.get_weights();
 }
 
 Shape cnet::layer::Dense::get_weights_shape(void) const
 {
-	return W_.get_shape();
+	return kernel_.get_shape();
 }
 
 size_t cnet::layer::Dense::get_biases(void) const
 {
-	return B_.get_weights();
+	return bias_.get_weights();
 }
 
 Shape cnet::layer::Dense::get_biases_shape(void) const
 {
-	return B_.get_shape();
+	return bias_.get_shape();
 }
 
 bool cnet::layer::Dense::use_bias(void) const
@@ -199,22 +199,22 @@ const string &cnet::layer::Dense::get_afunc_name(void) const
 
 const Var &cnet::layer::Dense::get_cmat_weights(void) const
 {
-	return W_;
+	return kernel_;
 }
 
 const Var &cnet::layer::Dense::get_cmat_biases(void) const
 {
-	return B_;
+	return bias_;
 }
 
 Weights &cnet::layer::Dense::get_mat_weights(void)
 {
-	return W_;
+	return kernel_;
 }
 
 Weights &cnet::layer::Dense::get_mat_biases(void)
 {
-	return B_;
+	return bias_;
 }
 
 // To compute the derivate error for the previos layer
@@ -225,20 +225,20 @@ Error cnet::layer::Dense::get_derror_dinput(const Error &dE) const
 {
 	// d(a)/d(z)
 	Var dZ = afunc_.afunc_derivate_(Z_);
-	return static_cast<Error>(W_.get_derror_dinput(dE ^ dZ, in_));
+	return static_cast<Error>(kernel_.get_derror_dinput(dE ^ dZ, in_));
 }
 
 Mat<float32> cnet::layer::Dense::get_derror_dinput(const Mat<float32> &dE) const
 {
 	// d(a)/d(z)
 	Mat<float32> dZ = afunc_.afunc_derivate_(Z_).get_cmf32();
-	return W_.get_derror_dinput(dE ^ dZ, in_);
+	return kernel_.get_derror_dinput(dE ^ dZ, in_);
 }
 
 Mat<float64> cnet::layer::Dense::get_derror_dinput(const Mat<float64> &dE) const
 {
 	Mat<float64> dZ = afunc_.afunc_derivate_(Z_).get_cmf64();
-	return W_.get_derror_dinput(dE ^ dZ, in_);
+	return kernel_.get_derror_dinput(dE ^ dZ, in_);
 }
 
 Output cnet::layer::Dense::operator()(const Input &X)
@@ -246,9 +246,9 @@ Output cnet::layer::Dense::operator()(const Input &X)
 	if (!built_)
 		build(X.get_shape());
 	
-	Z_ = W_ * X;
+	Z_ = kernel_ * X;
 	if (use_bias_)
-		Z_ += B_;
+		Z_ += bias_;
 	return static_cast<Output>(afunc_.afunc_(Z_));
 }
 
@@ -257,9 +257,9 @@ Mat<float32> cnet::layer::Dense::operator()(const Mat<float32> &X)
 	if (!built_)
 		build(X.get_shape());
 
-	Z_ = W_ * Var(X);
+	Z_ = kernel_ * Var(X);
 	if (use_bias_)
-		Z_ += B_;
+		Z_ += bias_;
 	return afunc_.afunc_(Z_).get_mf32();
 }
 
@@ -268,9 +268,9 @@ Mat<float64> cnet::layer::Dense::operator()(const Mat<float64> &X)
 	if (!built_)
 		build(X.get_shape());
 
-	Z_ = W_ * Var(X);
+	Z_ = kernel_ * Var(X);
 	if (use_bias_)
-		Z_ += B_;
+		Z_ += bias_;
 	return afunc_.afunc_(Z_).get_mf64();
 }
 
@@ -282,9 +282,9 @@ Dense &cnet::layer::Dense::build(size_t in_size)
 		throw invalid_argument("invalid argument: Invalid input size Dense layer only supports n x 1 dimension input");
 	
 	in_ = {in_size, 1};
-	W_.add_weights(dtype_, default_weights_name, {units_, in_size});
+	kernel_.add_weights(dtype_, default_weights_name, {units_, in_size});
 	if (use_bias_)
-		B_.add_weights(dtype_, default_biases_name, {units_, 1});
+		bias_.add_weights(dtype_, default_biases_name, {units_, 1});
 
 	afunc_.alloc_afunc(afunc_name_);
 	built_ = true;
@@ -302,9 +302,9 @@ Dense &cnet::layer::Dense::build(Shape in)
 		throw invalid_argument("invalid argument: Invalid input size Dense layer only supports n x 1 dimension input");
 	
 	in_ = in;
-	W_.add_weights(dtype_, default_weights_name, {units_, in_.rows});
+	kernel_.add_weights(dtype_, default_weights_name, {units_, in_.rows});
 	if (use_bias_)
-		B_.add_weights(dtype_, default_biases_name, {units_, 1});
+		bias_.add_weights(dtype_, default_biases_name, {units_, 1});
 	
 	afunc_.alloc_afunc(afunc_name_);
 	built_ = true;
@@ -342,14 +342,14 @@ Dense &cnet::layer::Dense::rand_uniform_range(float64 a, float64 b)
 	
 	switch (dtype_) {
 	case FLOAT_32_DTYPE:
-		W_.rand_uniform_range((float32) a, (float32) b);
+		kernel_.rand_uniform_range((float32) a, (float32) b);
 		if (use_bias_)
-			B_.rand_uniform_range((float32) a, (float32) b);
+			bias_.rand_uniform_range((float32) a, (float32) b);
 		break;
 	case FLOAT_64_DTYPE:
-		W_.rand_uniform_range(a, b);
+		kernel_.rand_uniform_range(a, b);
 		if (use_bias_)
-			B_.rand_uniform_range(a, b);
+			bias_.rand_uniform_range(a, b);
 		break;
 	default:
 		runtime_error("runtime error: Invalid data dtype");
@@ -373,9 +373,9 @@ Dense &cnet::layer::Dense::fit(const Mat<float32> &dE, const Mat<float32> &I, fl
 	// dE * dZ = d(e)/d(z) = d(e)/d(a) * d(a)/d(z)
 	// I = d(z)/d(w)
 	// 1 = d(z)/d(b)
-	W_.fit(dE ^ dZ, I, lr);
+	kernel_.fit(dE ^ dZ, I, lr);
 	if (use_bias_)
-		B_.fit(dE ^ dZ, Mat<float32>(I.get_shape(), 1.0), lr);
+		bias_.fit(dE ^ dZ, Mat<float32>(I.get_shape(), 1.0), lr);
 	return *this;
 }
 
@@ -383,9 +383,9 @@ Dense &cnet::layer::Dense::fit(const Mat<float64> &dE, const Mat<float64> &I, fl
 {
 	Mat<float64> dZ = afunc_.afunc_derivate_(Z_).get_cmf64();
 	
-	W_.fit(dE ^ dZ, I, lr);
+	kernel_.fit(dE ^ dZ, I, lr);
 	if (use_bias_)
-		B_.fit(dE ^ dZ, Mat<float64>(I.get_shape(), 1.0), lr);
+		bias_.fit(dE ^ dZ, Mat<float64>(I.get_shape(), 1.0), lr);
 	return *this;
 }
 
@@ -393,14 +393,14 @@ Dense &cnet::layer::Dense::fit(const Error &dE, const Input &I, float64 lr)
 {
 	const Var &dZ = afunc_.afunc_derivate_(Z_);
 	
-	W_.fit(dE * dZ, I, lr);
+	kernel_.fit(dE * dZ, I, lr);
 	if (use_bias_) {
-		switch (B_.get_dtype()) {
+		switch (bias_.get_dtype()) {
 		case FLOAT_32_DTYPE:
-			B_.fit(dE * dZ, Var(I.get_shape(), (float32) 1.0), lr);
+			bias_.fit(dE * dZ, Var(I.get_shape(), (float32) 1.0), lr);
 			break;
 		case FLOAT_64_DTYPE:
-			B_.fit(dE * dZ, Var(I.get_shape(),(float64) 1.0), lr);
+			bias_.fit(dE * dZ, Var(I.get_shape(),(float64) 1.0), lr);
 			break;
 		default:
 			throw runtime_error("runtime error: Invalid datatype");

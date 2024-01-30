@@ -22,9 +22,9 @@ namespace cnet::weights {
 		// a = f(z), where z = b + w_1 * i_1 + ... + w_n * i_n + ..., f is the activation function,
 		// dZ = d(e)/d(z) = d(e)/d(a) * d(a)/d(z),
 		// I is the input from which we want its derivate, basically d(e)/d(i_k)
-		// Var get_derror_dinput(const Var &dZ, Shape in) const;
-		// Mat<float32> get_derror_dinput(const Mat<float32> &dZ, Shape in) const;
-		// Mat<float64> get_derror_dinput(const Mat<float64> &dZ, Shape in) const;
+		Var get_derror_dinput(const Var &dZ, Shape in) const;
+		Mat<float32> get_derror_dinput(const Mat<float32> &dZ, Shape in) const;
+		Mat<float64> get_derror_dinput(const Mat<float64> &dZ, Shape in) const;
 		
 		// Fit backpropagation:
 		// a = f(z), where z = b + w_1 * i_1 + ... + w_n * i_n + ..., f is the activation function,

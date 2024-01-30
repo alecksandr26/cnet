@@ -83,6 +83,8 @@ static void sigmoid_helper(const Mat<T> &X, Mat<T> &Y)
 	size_t n_ite_8	= n - (n % 8);
 	size_t n_ite_4	= n - (n % 4);
 
+	
+
 	switch (n) {
 	case 1: y_allocated_mat[0] = (1.0 / (1.0 + exp(-x_allocated_mat[0]))); break;
 	case 2:
