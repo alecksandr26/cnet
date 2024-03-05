@@ -7,7 +7,6 @@
 #include "cnet/weights.hpp"
 #include "cnet/layer.hpp"
 
-// #define DEFAULT_AMOUNT_OF_BATCHES 4
 using namespace std;
 using namespace cnet;
 using namespace mathops;
@@ -121,7 +120,7 @@ Layer &cnet::layer::Layer::set_in_shape(Shape in)
 
 // Dense layer it is a normal NN of the type Y = Act(W * X + B), where X is one dimension
 // matrix
-cnet::layer::Dense::Dense(void) : Layer(true, 0, 0)
+cnet::layer::Dense::Dense(void) : TrainableLayer(true, 0, 0)
 {
 	units_			   = 0;
 	use_bias_		   = true;
@@ -133,21 +132,21 @@ cnet::layer::Dense::~Dense(void)
 	
 }
 
-cnet::layer::Dense::Dense(size_t units) : Layer(true, 0, units)
+cnet::layer::Dense::Dense(size_t units) : TrainableLayer(true, 0, units)
 {
 	units_			   = units;
 	use_bias_		   = true;
 	afunc_name_ = default_afunc_name;
 }
 
-cnet::layer::Dense::Dense(size_t units, CnetDtype dtype) : Layer(true, 0, units, dtype)
+cnet::layer::Dense::Dense(size_t units, CnetDtype dtype) : TrainableLayer(true, 0, units, dtype)
 {
 	units_			   = units;
 	use_bias_		   = true;
 	afunc_name_ = default_afunc_name;
 }
 
-cnet::layer::Dense::Dense(size_t units, const string &afunc_name) : Layer(true, 0, units)
+cnet::layer::Dense::Dense(size_t units, const string &afunc_name) : TrainableLayer(true, 0, units)
 {
 	units_			   = units;
 	use_bias_		   = true;
@@ -155,7 +154,7 @@ cnet::layer::Dense::Dense(size_t units, const string &afunc_name) : Layer(true, 
 }
 
 cnet::layer::Dense::Dense(size_t units, const string &afunc_name,
-			   CnetDtype dtype) : 	Layer(true, 0, units, dtype)
+			   CnetDtype dtype) : 	TrainableLayer(true, 0, units, dtype)
 {
 	units_			   = units;
 	use_bias_		   = true;

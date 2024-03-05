@@ -16,7 +16,7 @@
 
 namespace cnet::activation {
 	using namespace variable;
-	
+
 	template<typename T>
 	T Linear(const T &X);
 

@@ -1,0 +1,134 @@
+[
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/utils/src",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/cnet/utils/include -Wall -Wextra -pedantic -ggdb -std=gnu++20 -mavx -march=native -fopenmp -o CMakeFiles/cnet_utils.dir/raw_mat.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/utils/src/raw_mat.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/utils/src/raw_mat.cpp",
+  "output": "cnet/utils/src/CMakeFiles/cnet_utils.dir/raw_mat.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/utils/src",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/cnet/utils/include -Wall -Wextra -pedantic -ggdb -std=gnu++20 -mavx -march=native -fopenmp -o CMakeFiles/cnet_utils.dir/strassen.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/utils/src/strassen.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/utils/src/strassen.cpp",
+  "output": "cnet/utils/src/CMakeFiles/cnet_utils.dir/strassen.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/src",
+  "command": "/usr/bin/c++ -Dcnet_EXPORTS -I/home/aleck/Documents/projects/cnet/cnet/include -I/home/aleck/Documents/projects/cnet/cnet/utils/include -Wall -Wextra -pedantic -ggdb -std=gnu++20 -fPIC -mavx -march=native -fopenmp -o CMakeFiles/cnet.dir/mat.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/src/mat.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/src/mat.cpp",
+  "output": "cnet/src/CMakeFiles/cnet.dir/mat.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/src",
+  "command": "/usr/bin/c++ -Dcnet_EXPORTS -I/home/aleck/Documents/projects/cnet/cnet/include -I/home/aleck/Documents/projects/cnet/cnet/utils/include -Wall -Wextra -pedantic -ggdb -std=gnu++20 -fPIC -mavx -march=native -fopenmp -o CMakeFiles/cnet.dir/variable.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/src/variable.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/src/variable.cpp",
+  "output": "cnet/src/CMakeFiles/cnet.dir/variable.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/src",
+  "command": "/usr/bin/c++ -Dcnet_EXPORTS -I/home/aleck/Documents/projects/cnet/cnet/include -I/home/aleck/Documents/projects/cnet/cnet/utils/include -Wall -Wextra -pedantic -ggdb -std=gnu++20 -fPIC -mavx -march=native -fopenmp -o CMakeFiles/cnet.dir/activation.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/src/activation.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/src/activation.cpp",
+  "output": "cnet/src/CMakeFiles/cnet.dir/activation.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/src",
+  "command": "/usr/bin/c++ -Dcnet_EXPORTS -I/home/aleck/Documents/projects/cnet/cnet/include -I/home/aleck/Documents/projects/cnet/cnet/utils/include -Wall -Wextra -pedantic -ggdb -std=gnu++20 -fPIC -mavx -march=native -fopenmp -o CMakeFiles/cnet.dir/loss.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/src/loss.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/src/loss.cpp",
+  "output": "cnet/src/CMakeFiles/cnet.dir/loss.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/src",
+  "command": "/usr/bin/c++ -Dcnet_EXPORTS -I/home/aleck/Documents/projects/cnet/cnet/include -I/home/aleck/Documents/projects/cnet/cnet/utils/include -Wall -Wextra -pedantic -ggdb -std=gnu++20 -fPIC -mavx -march=native -fopenmp -o CMakeFiles/cnet.dir/backprop.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/src/backprop.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/src/backprop.cpp",
+  "output": "cnet/src/CMakeFiles/cnet.dir/backprop.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/src",
+  "command": "/usr/bin/c++ -Dcnet_EXPORTS -I/home/aleck/Documents/projects/cnet/cnet/include -I/home/aleck/Documents/projects/cnet/cnet/utils/include -Wall -Wextra -pedantic -ggdb -std=gnu++20 -fPIC -mavx -march=native -fopenmp -o CMakeFiles/cnet.dir/layer.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/src/layer.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/src/layer.cpp",
+  "output": "cnet/src/CMakeFiles/cnet.dir/layer.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/tests",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/cnet/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest -Wall -Wextra -pedantic -ggdb -std=gnu++20 -o CMakeFiles/test_mat.dir/test_mat.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/tests/test_mat.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/tests/test_mat.cpp",
+  "output": "cnet/tests/CMakeFiles/test_mat.dir/test_mat.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/tests",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/cnet/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest -Wall -Wextra -pedantic -ggdb -std=gnu++20 -o CMakeFiles/test_variable.dir/test_variable.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/tests/test_variable.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/tests/test_variable.cpp",
+  "output": "cnet/tests/CMakeFiles/test_variable.dir/test_variable.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/tests",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/cnet/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest -Wall -Wextra -pedantic -ggdb -std=gnu++20 -o CMakeFiles/test_activation.dir/test_activation.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/tests/test_activation.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/tests/test_activation.cpp",
+  "output": "cnet/tests/CMakeFiles/test_activation.dir/test_activation.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/tests",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/cnet/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest -Wall -Wextra -pedantic -ggdb -std=gnu++20 -o CMakeFiles/test_loss.dir/test_loss.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/tests/test_loss.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/tests/test_loss.cpp",
+  "output": "cnet/tests/CMakeFiles/test_loss.dir/test_loss.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/cnet/tests",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/cnet/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest -Wall -Wextra -pedantic -ggdb -std=gnu++20 -o CMakeFiles/test_layer.dir/test_layer.cpp.o -c /home/aleck/Documents/projects/cnet/cnet/tests/test_layer.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/cnet/tests/test_layer.cpp",
+  "output": "cnet/tests/CMakeFiles/test_layer.dir/test_layer.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/_deps/googletest-build/googlemock",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googlemock/include -I/home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googlemock -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest -Wall -Wextra -pedantic -ggdb -std=c++20 -Wall -Wshadow -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles/gmock.dir/src/gmock-all.cc.o -c /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googlemock/src/gmock-all.cc",
+  "file": "/home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googlemock/src/gmock-all.cc",
+  "output": "_deps/googletest-build/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/_deps/googletest-build/googlemock",
+  "command": "/usr/bin/c++  -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googlemock/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googlemock -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest -Wall -Wextra -pedantic -ggdb -std=c++20 -Wall -Wshadow -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles/gmock_main.dir/src/gmock_main.cc.o -c /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googlemock/src/gmock_main.cc",
+  "file": "/home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googlemock/src/gmock_main.cc",
+  "output": "_deps/googletest-build/googlemock/CMakeFiles/gmock_main.dir/src/gmock_main.cc.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/_deps/googletest-build/googletest",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/include -I/home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest -Wall -Wextra -pedantic -ggdb -std=c++20 -Wall -Wshadow -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/src/gtest-all.cc",
+  "file": "/home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/src/gtest-all.cc",
+  "output": "_deps/googletest-build/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/_deps/googletest-build/googletest",
+  "command": "/usr/bin/c++  -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/include -isystem /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest -Wall -Wextra -pedantic -ggdb -std=c++20 -Wall -Wshadow -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/src/gtest_main.cc",
+  "file": "/home/aleck/Documents/projects/cnet/build/_deps/googletest-src/googletest/src/gtest_main.cc",
+  "output": "_deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/examples",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/cnet/include -Wall -Wextra -pedantic -ggdb -std=gnu++20 -o CMakeFiles/bench_my_lib.dir/bench_my_lib.cpp.o -c /home/aleck/Documents/projects/cnet/examples/bench_my_lib.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/examples/bench_my_lib.cpp",
+  "output": "examples/CMakeFiles/bench_my_lib.dir/bench_my_lib.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/examples",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/cnet/include -Wall -Wextra -pedantic -ggdb -std=gnu++20 -o CMakeFiles/example_layer.dir/example_layer.cpp.o -c /home/aleck/Documents/projects/cnet/examples/example_layer.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/examples/example_layer.cpp",
+  "output": "examples/CMakeFiles/example_layer.dir/example_layer.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/examples",
+  "command": "/usr/bin/c++  -I/home/aleck/Documents/projects/cnet/cnet/include -Wall -Wextra -pedantic -ggdb -std=gnu++20 -o CMakeFiles/example_var.dir/example_var.cpp.o -c /home/aleck/Documents/projects/cnet/examples/example_var.cpp",
+  "file": "/home/aleck/Documents/projects/cnet/examples/example_var.cpp",
+  "output": "examples/CMakeFiles/example_var.dir/example_var.cpp.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/examples",
+  "command": "/usr/bin/cc    -o CMakeFiles/bench_c.dir/bench_c.c.o -c /home/aleck/Documents/projects/cnet/examples/bench_c.c",
+  "file": "/home/aleck/Documents/projects/cnet/examples/bench_c.c",
+  "output": "examples/CMakeFiles/bench_c.dir/bench_c.c.o"
+},
+{
+  "directory": "/home/aleck/Documents/projects/cnet/build/examples",
+  "command": "/usr/bin/cc    -o CMakeFiles/c_xor_net.dir/c_xor_net.c.o -c /home/aleck/Documents/projects/cnet/examples/c_xor_net.c",
+  "file": "/home/aleck/Documents/projects/cnet/examples/c_xor_net.c",
+  "output": "examples/CMakeFiles/c_xor_net.dir/c_xor_net.c.o"
+}
+]
